@@ -21,7 +21,7 @@ default:
     - src/applications/onboarding/templates/
     - src/applications/profile/templates/
   DJANGO_SETTINGS_MODULE: "project.settings"
-  MODE_DEBUG: true
+  DEBUG: true
   MODE_PROFILING: false
   HOST: ""
   PORT: -1
@@ -48,5 +48,5 @@ ci:
 heroku:
   DJANGO_SETTINGS_MODULE: "src.project.settings"
   HOST: ".herokuapp.com"
-  MODE_DEBUG: false
+  DEBUG: false
   VENV_SYNTHETIC: true
