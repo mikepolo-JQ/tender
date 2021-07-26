@@ -1,8 +1,10 @@
 from django.contrib.auth import get_user_model
 from rest_framework import serializers
 
+from api.models import Offer
 
-class UserSerializer(serializers.ModelSerializer):
+
+class OfferSerializer(serializers.ModelSerializer):
     class Meta:
-        model = get_user_model()
-        fields = ["username", "email"]
+        model = Offer
+        fields = "__all__"
