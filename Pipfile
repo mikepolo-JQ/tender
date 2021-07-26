@@ -11,6 +11,7 @@ dynaconf = "==3.1.2"
 dj-database-url = "*"
 psycopg2 = "*"
 ipython = "*"
+requests = "*"
 
 [dev-packages]
 
