@@ -9,16 +9,16 @@ from dynaconf import settings as _ds
 from rest_framework.response import Response
 
 from api.models import Offer
-from api.serializers import UserSerializer
+from api.serializers import OfferSerializer
 
 User = get_user_model()
 
 
 # Create your views here.
-class UserListView(generics.ListAPIView):
-    model = User
-    queryset = User.objects.all()
-    serializer_class = UserSerializer
+class OfferListView(generics.ListAPIView):
+    model = Offer
+    queryset = Offer.objects.all()
+    serializer_class = OfferSerializer
 
 
 class DataUpdateView(generics.views.APIView):
@@ -64,17 +64,18 @@ class UploadToTheDBView(generics.views.APIView):
 
         for offer_data in offers_data:
 
-            offer = Offer.objects.filter(lmd_id=int(offer_data["lmd_id"])).first()
+            offer = Offer.objects.filter(lmd_id=offer_data["lmd_id"]).first()
 
             if offer:
                 continue
 
             Offer.objects.create(
+                lmd_id=offer_data["lmd_id"],
                 store=offer_data["store"],
                 offer_text=offer_data["offer_text"],
                 offer_value=offer_data["offer_value"],
                 description=offer_data["description"],
-                code=offer_data["code"],
+                code=offer_data["code"] if offer_data["code"] else None,
                 title=offer_data["title"],
                 categories=offer_data["categories"],
                 featured=(False if offer_data["featured"] == "No" else True),

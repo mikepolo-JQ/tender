@@ -20,7 +20,9 @@ End Date : Date when the offer expires
 
 
 class Offer(models.Model):
-    lmd_id = models.IntegerField(null=True, blank=True, default=None, unique=True)
+    lmd_id = models.CharField(
+        null=False, blank=False, unique=True, max_length=25, default=None
+    )
     store = models.CharField(null=False, blank=False, max_length=50)
     offer_text = models.TextField(null=True, blank=True, default="")
     offer_value = models.CharField(null=False, blank=False, max_length=1000)
