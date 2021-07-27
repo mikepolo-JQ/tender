@@ -7,6 +7,7 @@ from offer.models import Offer
 class OfferSerializer(serializers.ModelSerializer):
 
     categories = serializers.SlugRelatedField(slug_field="name", read_only=True, many=True)
+    types = serializers.SlugRelatedField(slug_field="name", read_only=True, many=True)
 
     class Meta:
         model = Offer

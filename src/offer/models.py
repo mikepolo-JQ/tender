@@ -27,8 +27,14 @@ class Category(models.Model):
     description = models.TextField(null=True, blank=True, default=None)
 
 
+class Type(models.Model):
+    name = models.CharField(null=False, blank=False, unique=True, max_length=50)
+    description = models.TextField(null=True, blank=True, default=None)
+
+
 class Offer(models.Model):
     categories = models.ManyToManyField(Category, related_name="offers")
+    types = models.ManyToManyField(Type, related_name="offers")
     users = models.ManyToManyField(User, related_name="offers")
     is_active = models.BooleanField(default=True)
 
@@ -51,8 +57,6 @@ class Offer(models.Model):
     smart_link = models.URLField(max_length=1000)
     image_url = models.URLField(max_length=1000)
 
-    type = models.CharField(null=False, blank=False, max_length=25)
-    offer = models.CharField(null=True, blank=True, default=None, max_length=50)
     status = models.CharField(null=False, blank=False, max_length=25)
 
     start_date = models.DateField()

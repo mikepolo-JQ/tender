@@ -9,7 +9,7 @@ from dynaconf import settings as _ds
 
 from rest_framework.response import Response
 
-from offer.models import Offer, Category
+from offer.models import Offer, Category, Type
 from offer.serializers import OfferSerializer
 from offer.utils import OfferFilter
 
@@ -88,13 +88,12 @@ class UploadToTheDBView(generics.views.APIView):
                 url=offer_data["url"],
                 smart_link=offer_data["smartLink"],
                 image_url=offer_data["image_url"],
-                type=offer_data["type"],
-                offer=offer_data["offer"],
                 status=offer_data["status"],
                 start_date=offer_data["start_date"],
                 end_date=offer_data["end_date"],
             )
 
+            # adding categories
             categories = offer_data["categories"].split(',')
 
             for category_name in categories:
@@ -106,6 +105,19 @@ class UploadToTheDBView(generics.views.APIView):
 
                 category = Category.objects.create(name=category_name)
                 offer.categories.add(category)
+
+            # adding types
+            types = [offer_data['type'], offer_data['offer']]
+
+            for type_name in types:
+                type_obj = Type.objects.filter(name=type_name).first()
+
+                if type_obj:
+                    offer.types.add(type_obj)
+                    continue
+
+                type_obj = Type.objects.create(name=type_name)
+                offer.types.add(type_obj)
 
             added += 1
 
