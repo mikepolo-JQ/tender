@@ -1,4 +1,5 @@
 import os
+from datetime import timedelta
 from pathlib import Path
 
 import dj_database_url
@@ -16,7 +17,7 @@ ALLOWED_HOSTS = [
     _ds.HOST,
 ]
 
-AUTH_USER_MODEL = 'profile.User'
+AUTH_USER_MODEL = "profile.User"
 
 INSTALLED_APPS = [
     "django.contrib.admin",
@@ -27,6 +28,8 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     # -----------------------------------
     "rest_framework",
+    "rest_framework.authtoken",
+    "djoser",
     "django_filters",
     # -----------------------------------
     "profile",
@@ -119,5 +122,16 @@ STATIC_URL = "/static/"
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 REST_FRAMEWORK = {
-    'DEFAULT_FILTER_BACKENDS': ['django_filters.rest_framework.DjangoFilterBackend']
+    "DEFAULT_AUTHENTICATION_CLASSES": (
+        "rest_framework.authentication.TokenAuthentication",
+    ),
+    "DEFAULT_FILTER_BACKENDS": ["django_filters.rest_framework.DjangoFilterBackend"],
+}
+
+DJOSER = {
+    "PASSWORD_RESET_CONFIRM_URL": "#/password/reset/confirm/{uid}/{token}",
+    "USERNAME_RESET_CONFIRM_URL": "#/username/reset/confirm/{uid}/{token}",
+    "ACTIVATION_URL": "#/activate/{uid}/{token}",
+    "SEND_ACTIVATION_EMAIL": False,
+    "SERIALIZERS": {},
 }

@@ -21,7 +21,7 @@ class OfferListView(generics.ListAPIView):
     model = Offer
     queryset = Offer.objects.all()
     serializer_class = OfferSerializer
-    filter_backends = (DjangoFilterBackend, )
+    filter_backends = (DjangoFilterBackend,)
     filterset_class = OfferFilter
 
 
@@ -94,7 +94,7 @@ class UploadToTheDBView(generics.views.APIView):
             )
 
             # adding categories
-            categories = offer_data["categories"].split(',')
+            categories = offer_data["categories"].split(",")
 
             for category_name in categories:
                 category = Category.objects.filter(name=category_name).first()
@@ -107,7 +107,7 @@ class UploadToTheDBView(generics.views.APIView):
                 offer.categories.add(category)
 
             # adding types
-            types = [offer_data['type'], offer_data['offer']]
+            types = [offer_data["type"], offer_data["offer"]]
 
             for type_name in types:
                 type_obj = Type.objects.filter(name=type_name).first()
