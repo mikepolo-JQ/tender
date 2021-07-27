@@ -16,6 +16,7 @@ ALLOWED_HOSTS = [
     _ds.HOST,
 ]
 
+AUTH_USER_MODEL = 'profile.User'
 
 INSTALLED_APPS = [
     "django.contrib.admin",
@@ -26,8 +27,10 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     # -----------------------------------
     "rest_framework",
-    "api",
-    "django_filters"
+    "django_filters",
+    # -----------------------------------
+    "profile",
+    "offer",
 ]
 
 MIDDLEWARE = [
