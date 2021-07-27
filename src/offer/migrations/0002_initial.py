@@ -11,43 +11,53 @@ class Migration(migrations.Migration):
 
     dependencies = [
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
-        ('offer', '0001_initial'),
+        ("offer", "0001_initial"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='review',
-            name='author',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL),
+            model_name="review",
+            name="author",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL
+            ),
         ),
         migrations.AddField(
-            model_name='review',
-            name='offer',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='offer.offer'),
+            model_name="review",
+            name="offer",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE, to="offer.offer"
+            ),
         ),
         migrations.AddField(
-            model_name='offer',
-            name='categories',
-            field=models.ManyToManyField(related_name='offers', to='offer.Category'),
+            model_name="offer",
+            name="categories",
+            field=models.ManyToManyField(related_name="offers", to="offer.Category"),
         ),
         migrations.AddField(
-            model_name='offer',
-            name='types',
-            field=models.ManyToManyField(related_name='offers', to='offer.Type'),
+            model_name="offer",
+            name="types",
+            field=models.ManyToManyField(related_name="offers", to="offer.Type"),
         ),
         migrations.AddField(
-            model_name='offer',
-            name='users',
-            field=models.ManyToManyField(related_name='offers', to=settings.AUTH_USER_MODEL),
+            model_name="offer",
+            name="users",
+            field=models.ManyToManyField(
+                related_name="offers", to=settings.AUTH_USER_MODEL
+            ),
         ),
         migrations.AddField(
-            model_name='like',
-            name='author',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL),
+            model_name="like",
+            name="author",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL
+            ),
         ),
         migrations.AddField(
-            model_name='like',
-            name='review',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='offer.review'),
+            model_name="like",
+            name="review",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE, to="offer.review"
+            ),
         ),
     ]

@@ -3,7 +3,7 @@ import json
 from django.contrib.auth import get_user_model
 from django.shortcuts import render
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import generics
+from rest_framework import generics, permissions
 import requests
 from dynaconf import settings as _ds
 
@@ -16,8 +16,9 @@ from offer.utils import OfferFilter
 User = get_user_model()
 
 
-# Create your views here.
 class OfferListView(generics.ListAPIView):
+    permission_classes = [permissions.AllowAny]
+
     model = Offer
     queryset = Offer.objects.all()
     serializer_class = OfferSerializer
@@ -26,6 +27,9 @@ class OfferListView(generics.ListAPIView):
 
 
 class DataUpdateView(generics.views.APIView):
+
+    permission_classes = [permissions.IsAdminUser]
+
     def get(self, request):
 
         url = "https://linkmydeals.p.rapidapi.com/getOffers/"
@@ -55,6 +59,9 @@ class DataUpdateView(generics.views.APIView):
 
 
 class UploadToTheDBView(generics.views.APIView):
+
+    permission_classes = [permissions.IsAdminUser]
+
     def get(self, request):
         count = 0
         added = 0
