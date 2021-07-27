@@ -1,3 +1,9 @@
+from django.conf import settings
 from django.contrib import admin
 
-# Register your models here.
+from .models import User
+
+
+@admin.register(User)
+class UserAdminModel(admin.ModelAdmin):
+    pass
