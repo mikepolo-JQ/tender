@@ -7,60 +7,99 @@ class Migration(migrations.Migration):
 
     initial = True
 
-    dependencies = [
-    ]
+    dependencies = []
 
     operations = [
         migrations.CreateModel(
-            name='Category',
+            name="Category",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('name', models.CharField(max_length=50, unique=True)),
-                ('description', models.TextField(blank=True, default=None, null=True)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("name", models.CharField(max_length=50, unique=True)),
+                ("description", models.TextField(blank=True, default=None, null=True)),
             ],
         ),
         migrations.CreateModel(
-            name='Like',
+            name="Like",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
             ],
         ),
         migrations.CreateModel(
-            name='Offer',
+            name="Offer",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('is_active', models.BooleanField(default=True)),
-                ('rating', models.FloatField(default=0)),
-                ('lmd_id', models.CharField(default=None, max_length=25, unique=True)),
-                ('store', models.CharField(max_length=50)),
-                ('offer_text', models.TextField(blank=True, default=None, null=True)),
-                ('offer_value', models.CharField(max_length=1000)),
-                ('description', models.TextField(blank=True, null=True)),
-                ('code', models.CharField(blank=True, max_length=100, null=True)),
-                ('title', models.TextField()),
-                ('featured', models.BooleanField()),
-                ('url', models.URLField(max_length=1000)),
-                ('smart_link', models.URLField(max_length=1000)),
-                ('image_url', models.URLField(max_length=1000)),
-                ('status', models.CharField(max_length=25)),
-                ('start_date', models.DateField()),
-                ('end_date', models.DateField()),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("is_active", models.BooleanField(default=True)),
+                ("rating", models.FloatField(default=0)),
+                ("lmd_id", models.CharField(default=None, max_length=25, unique=True)),
+                ("store", models.CharField(max_length=50)),
+                ("offer_text", models.TextField(blank=True, default=None, null=True)),
+                ("offer_value", models.CharField(max_length=1000)),
+                ("description", models.TextField(blank=True, null=True)),
+                ("code", models.CharField(blank=True, max_length=100, null=True)),
+                ("title", models.TextField()),
+                ("featured", models.BooleanField()),
+                ("url", models.URLField(max_length=1000)),
+                ("smart_link", models.URLField(max_length=1000)),
+                ("image_url", models.URLField(max_length=1000)),
+                ("status", models.CharField(max_length=25)),
+                ("start_date", models.DateField()),
+                ("end_date", models.DateField()),
             ],
         ),
         migrations.CreateModel(
-            name='Review',
+            name="Review",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('content', models.TextField(default=None)),
-                ('rating_value', models.IntegerField(default=0)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("content", models.TextField(default=None)),
+                ("rating_value", models.IntegerField(default=0)),
             ],
         ),
         migrations.CreateModel(
-            name='Type',
+            name="Type",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('name', models.CharField(max_length=50, unique=True)),
-                ('description', models.TextField(blank=True, default=None, null=True)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("name", models.CharField(max_length=50, unique=True)),
+                ("description", models.TextField(blank=True, default=None, null=True)),
             ],
         ),
     ]
