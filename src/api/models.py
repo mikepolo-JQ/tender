@@ -19,6 +19,11 @@ End Date : Date when the offer expires
 """
 
 
+class Category(models.Model):
+    name = models.CharField(null=False, blank=False, unique=True, max_length=50)
+    description = models.TextField(null=True, blank=True, default=None)
+
+
 class Offer(models.Model):
     lmd_id = models.CharField(
         null=False, blank=False, unique=True, max_length=25, default=None
@@ -31,7 +36,7 @@ class Offer(models.Model):
     code = models.CharField(null=True, blank=True, max_length=100)
 
     title = models.TextField(null=False, blank=False)
-    categories = models.CharField(null=False, blank=False, max_length=1000)
+    categories = models.ManyToManyField(Category, related_name="offers")
     featured = models.BooleanField(null=False, blank=False)
     url = models.URLField(max_length=1000)
     smart_link = models.URLField(max_length=1000)
