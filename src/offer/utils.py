@@ -1,6 +1,6 @@
 from django_filters import rest_framework as filters
 
-from api.models import Offer
+from offer.models import Offer
 
 
 class CharFilterInFilter(filters.BaseInFilter, filters.CharFilter):

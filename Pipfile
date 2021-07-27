@@ -13,6 +13,7 @@ psycopg2 = "*"
 ipython = "*"
 requests = "*"
 django-filter = "*"
+pillow = "*"
 
 [dev-packages]
 

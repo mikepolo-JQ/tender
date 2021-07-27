@@ -9,9 +9,9 @@ from dynaconf import settings as _ds
 
 from rest_framework.response import Response
 
-from api.models import Offer, Category
-from api.serializers import OfferSerializer
-from api.utils import OfferFilter
+from offer.models import Offer, Category
+from offer.serializers import OfferSerializer
+from offer.utils import OfferFilter
 
 User = get_user_model()
 
