@@ -2,14 +2,16 @@ import json
 
 from django.contrib.auth import get_user_model
 from django.shortcuts import render
+from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import generics
 import requests
 from dynaconf import settings as _ds
 
 from rest_framework.response import Response
 
-from api.models import Offer
+from api.models import Offer, Category
 from api.serializers import OfferSerializer
+from api.utils import OfferFilter
 
 User = get_user_model()
 
@@ -19,6 +21,8 @@ class OfferListView(generics.ListAPIView):
     model = Offer
     queryset = Offer.objects.all()
     serializer_class = OfferSerializer
+    filter_backends = (DjangoFilterBackend, )
+    filterset_class = OfferFilter
 
 
 class DataUpdateView(generics.views.APIView):
@@ -53,6 +57,7 @@ class DataUpdateView(generics.views.APIView):
 class UploadToTheDBView(generics.views.APIView):
     def get(self, request):
         count = 0
+        added = 0
 
         with open("data.json") as data_file:
             data = json.load(data_file)
@@ -64,12 +69,14 @@ class UploadToTheDBView(generics.views.APIView):
 
         for offer_data in offers_data:
 
+            count += 1
+
             offer = Offer.objects.filter(lmd_id=offer_data["lmd_id"]).first()
 
             if offer:
                 continue
 
-            Offer.objects.create(
+            offer = Offer.objects.create(
                 lmd_id=offer_data["lmd_id"],
                 store=offer_data["store"],
                 offer_text=offer_data["offer_text"],
@@ -77,7 +84,6 @@ class UploadToTheDBView(generics.views.APIView):
                 description=offer_data["description"],
                 code=offer_data["code"] if offer_data["code"] else None,
                 title=offer_data["title"],
-                categories=offer_data["categories"],
                 featured=(False if offer_data["featured"] == "No" else True),
                 url=offer_data["url"],
                 smart_link=offer_data["smartLink"],
@@ -89,6 +95,18 @@ class UploadToTheDBView(generics.views.APIView):
                 end_date=offer_data["end_date"],
             )
 
-            count += 1
+            categories = offer_data["categories"].split(',')
 
-        return Response({"ok": True, "count": count})
+            for category_name in categories:
+                category = Category.objects.filter(name=category_name).first()
+
+                if category:
+                    offer.categories.add(category)
+                    continue
+
+                category = Category.objects.create(name=category_name)
+                offer.categories.add(category)
+
+            added += 1
+
+        return Response({"ok": True, "count": count, "added": added})
