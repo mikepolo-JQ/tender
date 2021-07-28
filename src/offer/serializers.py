@@ -1,7 +1,9 @@
-from django.contrib.auth import get_user_model
-from rest_framework import serializers
+import json
 
-from offer.models import Offer
+from rest_framework import serializers
+from rest_framework.renderers import JSONRenderer
+
+from offer.models import Offer, Store, Review
 
 
 class OfferSerializer(serializers.ModelSerializer):
@@ -15,3 +17,39 @@ class OfferSerializer(serializers.ModelSerializer):
     class Meta:
         model = Offer
         fields = "__all__"
+
+
+class StoreSerializer(serializers.ModelSerializer):
+
+    # offers = OfferSerializer(many=True)
+
+    class Meta:
+        model = Store
+        fields = ["id", "name", "description", "rating", "offers"]
+
+
+class ReviewCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Review
+        fields = ("content", "rating_value")
+
+
+class ReviewSerializer(serializers.ModelSerializer):
+    author = serializers.SlugRelatedField(slug_field="username", read_only=True)
+    likes_count = serializers.SerializerMethodField()
+    owner = serializers.SerializerMethodField()
+
+    def get_likes_count(self, review):
+        return review.likers.count()
+
+    def get_owner(self, review):
+
+        owner_names_dict = {
+            'store': StoreSerializer(Store.objects.get(pk=review.owner.pk)).data,
+            "offer": OfferSerializer(Offer.objects.get(pk=review.owner.pk)).data,
+        }
+        return owner_names_dict[review.content_type.name]
+
+    class Meta:
+        model = Review
+        fields = ("id", "content", "rating_value", "author", "likes_count", "owner")

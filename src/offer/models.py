@@ -55,10 +55,10 @@ class Review(models.Model):
     content = models.TextField(null=False, blank=False, default=None)
     rating_value = models.IntegerField(default=0)
 
+    likers = models.ManyToManyField(User)
 
-class Like(models.Model):
-    author = models.ForeignKey(User, on_delete=models.CASCADE)
-    review = models.ForeignKey(Review, on_delete=models.CASCADE)
+    def get_likes_count(self):
+        return self.likes.count()
 
 
 class AbstractClassModel(models.Model):

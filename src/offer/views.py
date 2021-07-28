@@ -9,11 +9,9 @@ from dynaconf import settings as _ds
 
 from rest_framework.response import Response
 
-from offer.models import Offer, Category, Type, Store
-from offer.serializers import OfferSerializer
+from offer.models import Offer, Category, Type, Store, Review
+from offer import serializers
 from offer.utils import OfferFilter
-
-User = get_user_model()
 
 
 class OfferListView(generics.ListAPIView):
@@ -21,16 +19,90 @@ class OfferListView(generics.ListAPIView):
 
     model = Offer
     queryset = Offer.objects.all()
-    serializer_class = OfferSerializer
+    serializer_class = serializers.OfferSerializer
     filter_backends = (DjangoFilterBackend,)
     filterset_class = OfferFilter
+
+
+class StoreListView(generics.ListAPIView):
+    permission_classes = [permissions.AllowAny]
+
+    model = Store
+    queryset = Store.objects.all()
+    serializer_class = serializers.StoreSerializer
+    # filter_backends = (DjangoFilterBackend,)
+    # filterset_class = OfferFilter
+
+
+class StoreDetailView(generics.RetrieveAPIView):
+    permission_classes = [permissions.AllowAny]
+
+    model = Store
+    queryset = Store.objects.filter()
+    serializer_class = serializers.StoreSerializer
+
+
+class StoreReviewsView(generics.ListCreateAPIView):
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+
+    model = Review
+    serializer_class = serializers.ReviewCreateSerializer
+
+    def get_queryset(self):
+        pk = self.kwargs.get("pk")
+        queryset = Store.objects.get(pk=pk).reviews.all()
+        return queryset
+
+    def perform_create(self, serializer):
+        pk = self.kwargs.get("pk")
+        store = Store.objects.get(pk=pk)
+        user = self.request.user
+
+        serializer.save(author_id=user.pk, owner=store)
+
+
+class IsOwnerOrReadOnly(permissions.BasePermission):
+
+    def has_object_permission(self, request, view, obj):
+
+        if request.method in permissions.SAFE_METHODS:
+            return True
+
+        return obj.author == request.user
+
+
+class ReviewDetailView(generics.RetrieveUpdateDestroyAPIView):
+    model = Review
+    serializer_class = serializers.ReviewSerializer
+    queryset = Review.objects.filter()
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly, IsOwnerOrReadOnly]
+
+
+class ReviewLikeView(generics.views.APIView):
+
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request, *args, **kwargs):
+        user = self.request.user
+        pk = kwargs['pk']
+
+        review = Review.objects.filter(pk=pk).first()
+
+        if not review:
+            raise ModuleNotFoundError(f"Review with pk={pk} is not found")
+
+        if review.likers.filter(pk=user.pk).exists():
+            review.likers.remove(user.pk)
+        else:
+            review.likers.add(user)
+        return Response({'ok': True})
 
 
 class DataUpdateView(generics.views.APIView):
 
     permission_classes = [permissions.IsAdminUser]
 
-    def get(self, request):
+    def get(self, request, *args, **kwargs):
 
         url = "https://linkmydeals.p.rapidapi.com/getOffers/"
 
@@ -60,9 +132,9 @@ class DataUpdateView(generics.views.APIView):
 
 class UploadToTheDBView(generics.views.APIView):
 
-    # permission_classes = [permissions.IsAdminUser]
+    permission_classes = [permissions.IsAdminUser]
 
-    def get(self, request):
+    def get(self, request, *args, **kwargs):
         count = 0
         added = 0
 

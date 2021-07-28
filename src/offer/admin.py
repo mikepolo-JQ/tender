@@ -2,7 +2,7 @@ from django.contrib import admin
 
 
 # Register your models here.
-from offer.models import Offer, Review, Like, Category, Type
+from offer.models import Offer, Review, Category, Type
 
 
 @admin.register(Offer)
@@ -12,11 +12,6 @@ class OfferAdminModel(admin.ModelAdmin):
 
 @admin.register(Review)
 class ReviewAdminModel(admin.ModelAdmin):
-    pass
-
-
-@admin.register(Like)
-class LikeAdminModel(admin.ModelAdmin):
     pass
 
 
