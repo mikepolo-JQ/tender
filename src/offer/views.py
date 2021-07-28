@@ -62,7 +62,6 @@ class StoreReviewsView(generics.ListCreateAPIView):
 
 
 class IsOwnerOrReadOnly(permissions.BasePermission):
-
     def has_object_permission(self, request, view, obj):
 
         if request.method in permissions.SAFE_METHODS:
@@ -84,7 +83,7 @@ class ReviewLikeView(generics.views.APIView):
 
     def post(self, request, *args, **kwargs):
         user = self.request.user
-        pk = kwargs['pk']
+        pk = kwargs["pk"]
 
         review = Review.objects.filter(pk=pk).first()
 
@@ -95,7 +94,7 @@ class ReviewLikeView(generics.views.APIView):
             review.likers.remove(user.pk)
         else:
             review.likers.add(user)
-        return Response({'ok': True})
+        return Response({"ok": True})
 
 
 class DataUpdateView(generics.views.APIView):
