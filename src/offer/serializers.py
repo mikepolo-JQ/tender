@@ -45,7 +45,7 @@ class ReviewSerializer(serializers.ModelSerializer):
     def get_owner(self, review):
 
         owner_names_dict = {
-            'store': StoreSerializer(Store.objects.get(pk=review.owner.pk)).data,
+            "store": StoreSerializer(Store.objects.get(pk=review.owner.pk)).data,
             "offer": OfferSerializer(Offer.objects.get(pk=review.owner.pk)).data,
         }
         return owner_names_dict[review.content_type.name]
