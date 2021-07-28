@@ -57,9 +57,6 @@ class Review(models.Model):
 
     likers = models.ManyToManyField(User)
 
-    def get_likes_count(self):
-        return self.likes.count()
-
 
 class AbstractClassModel(models.Model):
     rating = models.FloatField(default=0)

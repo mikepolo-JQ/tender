@@ -1,8 +1,5 @@
-import json
 
 from rest_framework import serializers
-from rest_framework.renderers import JSONRenderer
-
 from offer.models import Offer, Store, Review
 
 
@@ -21,7 +18,7 @@ class OfferSerializer(serializers.ModelSerializer):
 
 class StoreSerializer(serializers.ModelSerializer):
 
-    # offers = OfferSerializer(many=True)
+    offers = OfferSerializer(many=True)
 
     class Meta:
         model = Store
