@@ -1,5 +1,8 @@
 from django.db import models
 from django.conf import settings
+from typing import Union
+from django.contrib.contenttypes.fields import GenericForeignKey, GenericRelation
+from django.contrib.contenttypes.models import ContentType
 
 User = settings.AUTH_USER_MODEL
 
@@ -22,28 +25,67 @@ End Date : Date when the offer expires
 """
 
 
-class Category(models.Model):
+class AbstractOfferProperty(models.Model):
     name = models.CharField(null=False, blank=False, unique=True, max_length=50)
     description = models.TextField(null=True, blank=True, default=None)
 
-
-class Type(models.Model):
-    name = models.CharField(null=False, blank=False, unique=True, max_length=50)
-    description = models.TextField(null=True, blank=True, default=None)
+    class Meta:
+        abstract = True
 
 
-class Offer(models.Model):
+class Category(AbstractOfferProperty):
+    pass
+
+
+class Type(AbstractOfferProperty):
+    pass
+
+
+class Review(models.Model):
+    content_type = models.ForeignKey(
+        ContentType, on_delete=models.CASCADE, default=None
+    )
+    object_id = models.PositiveIntegerField(default=None)
+    owner = GenericForeignKey()
+
+    author = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name="my_reviews"
+    )
+
+    content = models.TextField(null=False, blank=False, default=None)
+    rating_value = models.IntegerField(default=0)
+
+
+class Like(models.Model):
+    author = models.ForeignKey(User, on_delete=models.CASCADE)
+    review = models.ForeignKey(Review, on_delete=models.CASCADE)
+
+
+class AbstractClassModel(models.Model):
+    rating = models.FloatField(default=0)
+    reviews = GenericRelation(Review)
+
+    class Meta:
+        abstract = True
+
+
+class Store(AbstractOfferProperty, AbstractClassModel):
+    pass
+
+
+class Offer(AbstractClassModel):
     categories = models.ManyToManyField(Category, related_name="offers")
     types = models.ManyToManyField(Type, related_name="offers")
     users = models.ManyToManyField(User, related_name="offers")
     is_active = models.BooleanField(default=True)
-
-    rating = models.FloatField(default=0)
+    store = models.ForeignKey(
+        Store, on_delete=models.CASCADE, related_name="offers", default=None
+    )
 
     lmd_id = models.CharField(
         null=False, blank=False, unique=True, max_length=25, default=None
     )
-    store = models.CharField(null=False, blank=False, max_length=50)
+
     offer_text = models.TextField(null=True, blank=True, default=None)
     offer_value = models.CharField(null=False, blank=False, max_length=1000)
     description = models.TextField(null=True, blank=True)
@@ -61,16 +103,3 @@ class Offer(models.Model):
 
     start_date = models.DateField()
     end_date = models.DateField()
-
-
-class Review(models.Model):
-    offer = models.ForeignKey(Offer, on_delete=models.CASCADE)
-    author = models.ForeignKey(User, on_delete=models.CASCADE)
-
-    content = models.TextField(null=False, blank=False, default=None)
-    rating_value = models.IntegerField(default=0)
-
-
-class Like(models.Model):
-    author = models.ForeignKey(User, on_delete=models.CASCADE)
-    review = models.ForeignKey(Review, on_delete=models.CASCADE)

@@ -17,7 +17,7 @@ ALLOWED_HOSTS = [
     _ds.HOST,
 ]
 
-AUTH_USER_MODEL = "profile.User"
+AUTH_USER_MODEL = "user_profile.User"
 
 INSTALLED_APPS = [
     "django.contrib.admin",
@@ -32,7 +32,7 @@ INSTALLED_APPS = [
     "djoser",
     "django_filters",
     # -----------------------------------
-    "profile",
+    "user_profile",
     "offer",
 ]
 

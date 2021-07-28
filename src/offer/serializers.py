@@ -10,6 +10,7 @@ class OfferSerializer(serializers.ModelSerializer):
         slug_field="name", read_only=True, many=True
     )
     types = serializers.SlugRelatedField(slug_field="name", read_only=True, many=True)
+    store = serializers.SlugRelatedField(slug_field="name", read_only=True)
 
     class Meta:
         model = Offer
