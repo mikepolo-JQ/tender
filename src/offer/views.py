@@ -9,7 +9,7 @@ from dynaconf import settings as _ds
 
 from rest_framework.response import Response
 
-from offer.models import Offer, Category, Type
+from offer.models import Offer, Category, Type, Store
 from offer.serializers import OfferSerializer
 from offer.utils import OfferFilter
 
@@ -60,7 +60,7 @@ class DataUpdateView(generics.views.APIView):
 
 class UploadToTheDBView(generics.views.APIView):
 
-    permission_classes = [permissions.IsAdminUser]
+    # permission_classes = [permissions.IsAdminUser]
 
     def get(self, request):
         count = 0
@@ -83,9 +83,17 @@ class UploadToTheDBView(generics.views.APIView):
             if offer:
                 continue
 
+            # adding stores
+            store_name = offer_data["store"]
+
+            store = Store.objects.filter(name=store_name).first()
+
+            if not store:
+                store = Store.objects.create(name=store_name)
+
             offer = Offer.objects.create(
                 lmd_id=offer_data["lmd_id"],
-                store=offer_data["store"],
+                store=store,
                 offer_text=offer_data["offer_text"],
                 offer_value=offer_data["offer_value"],
                 description=offer_data["description"],
@@ -106,11 +114,9 @@ class UploadToTheDBView(generics.views.APIView):
             for category_name in categories:
                 category = Category.objects.filter(name=category_name).first()
 
-                if category:
-                    offer.categories.add(category)
-                    continue
+                if not category:
+                    category = Category.objects.create(name=category_name)
 
-                category = Category.objects.create(name=category_name)
                 offer.categories.add(category)
 
             # adding types
@@ -119,11 +125,9 @@ class UploadToTheDBView(generics.views.APIView):
             for type_name in types:
                 type_obj = Type.objects.filter(name=type_name).first()
 
-                if type_obj:
-                    offer.types.add(type_obj)
-                    continue
+                if not type_obj:
+                    type_obj = Type.objects.create(name=type_name)
 
-                type_obj = Type.objects.create(name=type_name)
                 offer.types.add(type_obj)
 
             added += 1
