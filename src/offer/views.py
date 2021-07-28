@@ -62,6 +62,10 @@ class StoreReviewsView(generics.ListCreateAPIView):
 
 
 class IsOwnerOrReadOnly(permissions.BasePermission):
+    """
+        Object-level permission to only allow author of an object to edit it.
+        Assumes the model instance has an `author` attribute.
+    """
     def has_object_permission(self, request, view, obj):
 
         if request.method in permissions.SAFE_METHODS:
@@ -122,7 +126,6 @@ class DataUpdateView(generics.views.APIView):
             "GET", url, headers=headers, params=querystring
         ).json()
 
-        # print(response.text)
         with open("data.json", "w") as data_file:
             json.dump(response, data_file, indent=4)
 
@@ -162,6 +165,7 @@ class UploadToTheDBView(generics.views.APIView):
             if not store:
                 store = Store.objects.create(name=store_name)
 
+            # creature offers
             offer = Offer.objects.create(
                 lmd_id=offer_data["lmd_id"],
                 store=store,
