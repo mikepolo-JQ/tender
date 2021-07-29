@@ -37,8 +37,8 @@ class OwnerReviewsListView(generics.ListCreateAPIView):
     serializer_class = serializers.ReviewSerializer
 
     def get_owner_class(self):
-        class_name = self.request.path.split('/')[2]
-        owner_class = {'offer': Offer, 'store': Store}.get(class_name)
+        class_name = self.request.path.split("/")[2]
+        owner_class = {"offer": Offer, "store": Store}.get(class_name)
 
         if not owner_class:
             raise KeyError("Owner class for this review list isn't found.")
