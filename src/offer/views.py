@@ -125,8 +125,7 @@ class DataUpdateView(generics.views.APIView):
 
     def get(self, request, *args, **kwargs):
         tasks.update_data_file.delay()
-
-        return Response({'update': True})
+        return Response({"update": True})
 
 
 class UploadToTheDBView(generics.views.APIView):
@@ -135,4 +134,4 @@ class UploadToTheDBView(generics.views.APIView):
 
     def get(self, request, *args, **kwargs):
         tasks.upload_data_from_file_to_the_db.delay()
-        return Response({'upload': True})
+        return Response({"upload": True})

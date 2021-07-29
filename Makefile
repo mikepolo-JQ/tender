@@ -128,5 +128,17 @@ mg: migrations format migrate
 
 .PHONY: celery
 celery:
-	$(call log, applying migrations)
+	$(call log, start celery worker)
 	$(RUN) celery -A project worker -l INFO --pool=solo
+
+
+.PHONY: celery_beat
+celery_beat:
+	$(call log, start celery beat)
+	$(RUN) celery -A project beat -l info
+
+
+.PHONY: redis
+redis:
+	$(call log, start redis-server)
+	$ redis-server

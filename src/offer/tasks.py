@@ -103,11 +103,9 @@ def update_data_file():
         "x-rapidapi-host": "linkmydeals.p.rapidapi.com",
     }
 
-    response = requests.request(
-        "GET", url, headers=headers, params=querystring
-    ).json()
+    response = requests.request("GET", url, headers=headers, params=querystring).json()
 
     with open(file_name, "w") as data_file:
         json.dump(response, data_file, indent=4)
 
-    return {'ok': True, "uploaded_count": len(response['offers'])}
+    return {"ok": True, "uploaded_count": len(response["offers"])}
