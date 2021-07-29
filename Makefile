@@ -124,3 +124,9 @@ su:
 .PHONY: mg
 mg: migrations format migrate
 	$(call log, resetting db to initial state)
+
+
+.PHONY: celery
+celery:
+	$(call log, applying migrations)
+	$(RUN) celery -A project worker -l INFO --pool=solo
