@@ -74,7 +74,6 @@ class AbstractClassModel(models.Model):
         if not count:
             self.rating = 0
             self.save()
-            print("--------------------")
             return
 
         rating = 0
