@@ -9,7 +9,7 @@ from rest_framework.response import Response
 
 from offer.models import Offer, Category, Type, Store, Review
 from offer import serializers
-from offer.utils import OfferFilter
+from offer.service import OfferFilter, IsOwnerOrReadOnly
 
 
 class OfferListView(generics.ListAPIView):
@@ -31,7 +31,7 @@ class OfferDetailView(generics.RetrieveAPIView):
 
 
 class OwnerReviewsListView(generics.ListCreateAPIView):
-    # permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
 
     model = Review
     serializer_class = serializers.ReviewSerializer
@@ -88,7 +88,7 @@ class ReviewDetailView(generics.RetrieveUpdateDestroyAPIView):
     model = Review
     serializer_class = serializers.ReviewSerializer
     queryset = Review.objects.filter()
-    # permission_classes = [permissions.IsAuthenticatedOrReadOnly, IsOwnerOrReadOnly]
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly, IsOwnerOrReadOnly]
 
     def perform_destroy(self, instance):
         instance.owner.update_rating()
