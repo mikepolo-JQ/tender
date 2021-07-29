@@ -1,7 +1,5 @@
 import json
 
-from django.contrib.auth import get_user_model
-from django.shortcuts import render
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import generics, permissions
 import requests
@@ -24,6 +22,49 @@ class OfferListView(generics.ListAPIView):
     filterset_class = OfferFilter
 
 
+class OfferDetailView(generics.RetrieveAPIView):
+    permission_classes = [permissions.AllowAny]
+
+    model = Offer
+    queryset = Offer.objects.filter()
+    serializer_class = serializers.OfferSerializer
+
+
+class OwnerReviewsListView(generics.ListCreateAPIView):
+    # permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+
+    model = Review
+    serializer_class = serializers.ReviewSerializer
+
+    def get_owner_class(self):
+        class_name = self.request.path.split('/')[2]
+        owner_class = {'offer': Offer, 'store': Store}.get(class_name)
+
+        if not owner_class:
+            raise KeyError("Owner class for this review list isn't found.")
+
+        return owner_class
+
+    def get_queryset(self):
+        owner_class = self.get_owner_class()
+
+        pk = self.kwargs.get("pk")
+        queryset = owner_class.objects.get(pk=pk).reviews.all()
+        return queryset
+
+    def perform_create(self, serializer):
+        owner_class = self.get_owner_class()
+
+        pk = self.kwargs.get("pk")
+        owner = owner_class.objects.get(pk=pk)
+        user = self.request.user
+
+        serializer.save(author_id=user.pk, owner=owner)
+
+        owner.update_rating()
+
+
+# //////////////////////// STORE ///////////////////////////////
 class StoreListView(generics.ListAPIView):
     permission_classes = [permissions.AllowAny]
 
@@ -42,43 +83,22 @@ class StoreDetailView(generics.RetrieveAPIView):
     serializer_class = serializers.StoreSerializer
 
 
-class StoreReviewsView(generics.ListCreateAPIView):
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
-
-    model = Review
-    serializer_class = serializers.ReviewCreateSerializer
-
-    def get_queryset(self):
-        pk = self.kwargs.get("pk")
-        queryset = Store.objects.get(pk=pk).reviews.all()
-        return queryset
-
-    def perform_create(self, serializer):
-        pk = self.kwargs.get("pk")
-        store = Store.objects.get(pk=pk)
-        user = self.request.user
-
-        serializer.save(author_id=user.pk, owner=store)
-
-
-class IsOwnerOrReadOnly(permissions.BasePermission):
-    """
-    Object-level permission to only allow author of an object to edit it.
-    Assumes the model instance has an `author` attribute.
-    """
-    def has_object_permission(self, request, view, obj):
-
-        if request.method in permissions.SAFE_METHODS:
-            return True
-
-        return obj.author == request.user
-
-
+# //////////////////////// REVIEWS ///////////////////////////////
 class ReviewDetailView(generics.RetrieveUpdateDestroyAPIView):
     model = Review
     serializer_class = serializers.ReviewSerializer
     queryset = Review.objects.filter()
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly, IsOwnerOrReadOnly]
+    # permission_classes = [permissions.IsAuthenticatedOrReadOnly, IsOwnerOrReadOnly]
+
+    def perform_destroy(self, instance):
+        instance.owner.update_rating()
+        super().perform_destroy(instance)
+
+    def perform_update(self, serializer):
+        super().perform_update(serializer)
+
+        review = self.get_object()
+        review.owner.update_rating()
 
 
 class ReviewLikeView(generics.views.APIView):
@@ -101,6 +121,7 @@ class ReviewLikeView(generics.views.APIView):
         return Response({"ok": True})
 
 
+# //////////////////////// ADMIN ///////////////////////////////
 class DataUpdateView(generics.views.APIView):
 
     permission_classes = [permissions.IsAdminUser]
