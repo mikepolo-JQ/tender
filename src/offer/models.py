@@ -1,3 +1,5 @@
+import datetime
+
 from django.db import models
 from django.conf import settings
 from typing import Union
@@ -57,10 +59,30 @@ class Review(models.Model):
 
     likers = models.ManyToManyField(User)
 
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
 
 class AbstractClassModel(models.Model):
     rating = models.FloatField(default=0)
     reviews = GenericRelation(Review)
+
+    def update_rating(self):
+        reviews = self.reviews.all().only('rating_value')
+        count = reviews.count()
+
+        if not count:
+            self.rating = 0
+            self.save()
+            print("--------------------")
+            return
+
+        rating = 0
+        for review in reviews:
+            rating += review.rating_value
+
+        self.rating = rating / count
+        self.save()
 
     class Meta:
         abstract = True

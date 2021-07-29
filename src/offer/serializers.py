@@ -25,22 +25,16 @@ class StoreSerializer(serializers.ModelSerializer):
         fields = ["id", "name", "description", "rating", "offers"]
 
 
-class ReviewCreateSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Review
-        fields = ("content", "rating_value")
-
-
 class ReviewSerializer(serializers.ModelSerializer):
     author = serializers.SlugRelatedField(slug_field="username", read_only=True)
     likes_count = serializers.SerializerMethodField()
     owner = serializers.SerializerMethodField()
+    rating_value = serializers.IntegerField(min_value=0, max_value=5)
 
     def get_likes_count(self, review):
         return review.likers.count()
 
     def get_owner(self, review):
-
         owner_names_dict = {
             "store": StoreSerializer(Store.objects.get(pk=review.owner.pk)).data,
             "offer": OfferSerializer(Offer.objects.get(pk=review.owner.pk)).data,
@@ -49,4 +43,4 @@ class ReviewSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Review
-        fields = ("id", "content", "rating_value", "author", "likes_count", "owner")
+        fields = ("id", "content", "rating_value", "author", "likes_count", "owner", "created_at", "updated_at")
