@@ -68,7 +68,7 @@ class AbstractClassModel(models.Model):
     reviews = GenericRelation(Review)
 
     def update_rating(self):
-        reviews = self.reviews.all().only('rating_value')
+        reviews = self.reviews.all().only("rating_value")
         count = reviews.count()
 
         if not count:
