@@ -12,7 +12,7 @@ class OfferListView(generics.ListAPIView):
 
     model = Offer
     queryset = Offer.objects.all()
-    serializer_class = serializers.OfferSerializer
+    serializer_class = serializers.OfferListSerializer
     filter_backends = (DjangoFilterBackend,)
     filterset_class = OfferFilter
 
@@ -22,7 +22,7 @@ class OfferDetailView(generics.RetrieveAPIView):
 
     model = Offer
     queryset = Offer.objects.filter()
-    serializer_class = serializers.OfferSerializer
+    serializer_class = serializers.OfferDetailSerializer
 
 
 class OwnerReviewsListView(generics.ListCreateAPIView):
@@ -44,7 +44,9 @@ class OwnerReviewsListView(generics.ListCreateAPIView):
         owner_class = self.get_owner_class()
 
         pk = self.kwargs.get("pk")
+
         queryset = owner_class.objects.get(pk=pk).reviews.all()
+
         return queryset
 
     def perform_create(self, serializer):
@@ -65,7 +67,7 @@ class StoreListView(generics.ListAPIView):
 
     model = Store
     queryset = Store.objects.all()
-    serializer_class = serializers.StoreSerializer
+    serializer_class = serializers.StoreListSerializer
     # filter_backends = (DjangoFilterBackend,)
     # filterset_class = OfferFilter
 
@@ -75,7 +77,7 @@ class StoreDetailView(generics.RetrieveAPIView):
 
     model = Store
     queryset = Store.objects.filter()
-    serializer_class = serializers.StoreSerializer
+    serializer_class = serializers.StoreDetailSerializer
 
 
 # //////////////////////// REVIEWS ///////////////////////////////

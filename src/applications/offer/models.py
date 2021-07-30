@@ -54,6 +54,14 @@ class Review(models.Model):
         User, on_delete=models.CASCADE, related_name="my_reviews"
     )
 
+    parent = models.ForeignKey(
+        "self",
+        on_delete=models.SET_NULL,
+        blank=True,
+        null=True,
+        related_name="children",
+    )
+
     content = models.TextField(null=False, blank=False, default=None)
     rating_value = models.IntegerField(default=0)
 
