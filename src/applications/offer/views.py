@@ -1,12 +1,10 @@
-import json
-
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import generics, permissions
 from rest_framework.response import Response
 
-from offer.models import Offer, Category, Type, Store, Review
-from offer import serializers, tasks
-from offer.service import OfferFilter, IsOwnerOrReadOnly
+from applications.offer.models import Offer, Store, Review
+from applications.offer import serializers, tasks
+from applications.offer.service import OfferFilter, IsOwnerOrReadOnly
 
 
 class OfferListView(generics.ListAPIView):

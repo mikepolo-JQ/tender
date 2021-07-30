@@ -1,11 +1,10 @@
 import json
 
-from celery import shared_task
 from project.celery import app
 from dynaconf import settings as _ds
 import requests
 
-from offer.models import Offer, Store, Category, Type
+from applications.offer.models import Offer, Store, Category, Type
 
 file_name = "data.json"
 
