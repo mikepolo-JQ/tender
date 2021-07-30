@@ -32,8 +32,8 @@ INSTALLED_APPS = [
     "djoser",
     "django_filters",
     # -----------------------------------
-    "user_profile",
-    "offer",
+    "applications.user_profile",
+    "applications.offer",
 ]
 
 MIDDLEWARE = [
