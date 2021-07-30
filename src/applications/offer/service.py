@@ -1,7 +1,7 @@
 from django_filters import rest_framework as filters
 from rest_framework import permissions
 
-from offer.models import Offer
+from applications.offer.models import Offer
 
 
 class CharFilterInFilter(filters.BaseInFilter, filters.CharFilter):

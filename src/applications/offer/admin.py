@@ -2,7 +2,7 @@ from django.contrib import admin
 
 
 # Register your models here.
-from offer.models import Offer, Review, Category, Type
+from applications.offer.models import Offer, Review, Category, Type
 
 
 @admin.register(Offer)

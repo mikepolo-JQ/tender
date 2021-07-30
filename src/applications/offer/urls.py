@@ -1,12 +1,12 @@
 from django.urls import path
 
 from . import views
-from .apps import ApiConfig
+from .apps import OfferConfig
 
 # from django.views.decorators.csrf import csrf_exempt
 
 
-app_name = ApiConfig.name
+app_name = OfferConfig.label
 
 urlpatterns = [
     path("offer/", views.OfferListView.as_view(), name="offers"),

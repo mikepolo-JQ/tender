@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from offer.models import Offer, Store, Review
+from applications.offer.models import Offer, Store, Review
 
 
 class OfferSerializer(serializers.ModelSerializer):
