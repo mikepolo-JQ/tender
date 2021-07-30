@@ -80,16 +80,4 @@ class ReviewSerializer(serializers.ModelSerializer):
     class Meta:
         list_serializer_class = FilterReviewListSerializer
         model = Review
-        # fields = (
-        #     "id",
-        #     "content",
-        #     "rating_value",
-        #     "author",
-        #     "likes_count",
-        #     "owner",
-        #     "created_at",
-        #     "updated_at",
-        #     "children",
-        #     "content_type",
-        # )
         exclude = ["likers", "object_id", "parent"]
