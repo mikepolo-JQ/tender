@@ -7,7 +7,7 @@ from applications.user_profile.models import User
 from rest_framework import generics, permissions
 
 from applications.user_profile import serializers
-from applications.user_profile.service import IsYouOrIsAdminOrReadOnly
+from applications.user_profile.service import IsYouOrIsAdminOrReadOnly, delete_file_from_s3
 
 
 class UserProfileView(generics.RetrieveUpdateAPIView):
@@ -17,10 +17,11 @@ class UserProfileView(generics.RetrieveUpdateAPIView):
     queryset = User.objects.filter()
     serializer_class = serializers.UserDetailSerializer
 
-    # def perform_update(self, serializer):
-    #     new_avatar = serializer.validated_data.get('avatar', None)
-    #     if new_avatar:
-    #         user = self.get_object()
-    #         old_avatar = user.avatar
-    #         os.remove(settings.MEDIA_ROOT + "/" + old_avatar.name)
-    #     super().perform_update(serializer)
+    def perform_update(self, serializer):
+        new_avatar = serializer.validated_data.get('avatar', None)
+        if new_avatar:
+            user = self.get_object()
+            old_avatar = user.avatar
+            resp = delete_file_from_s3(old_avatar.name)
+            if resp:
+                super().perform_update(serializer)
