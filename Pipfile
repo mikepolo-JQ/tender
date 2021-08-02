@@ -19,6 +19,7 @@ celery = "*"
 redis = "*"
 boto3 = "*"
 django-storages = "*"
+pytest = "*"
 
 [dev-packages]
 

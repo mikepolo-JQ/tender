@@ -10,8 +10,8 @@ class UserListSerializer(serializers.ModelSerializer):
 
 class UserDetailSerializer(serializers.ModelSerializer):
 
-    # contacts = UserListSerializer(many=True)
+    contacts = UserListSerializer(many=True)
 
     class Meta:
         model = User
-        exclude = ("password", "date_joined", "groups", "user_permissions", "contacts")
+        exclude = ("password", "date_joined", "groups", "user_permissions")

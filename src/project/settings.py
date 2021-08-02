@@ -157,7 +157,8 @@ AWS_SECRET_ACCESS_KEY = _ds.AWS_SECRET_KEY
 AWS_STORAGE_BUCKET_NAME = _ds.AWS_BUCKET_NAME
 AWS_S3_CUSTOM_DOMAIN = f"{AWS_STORAGE_BUCKET_NAME}.s3.amazonaws.com"
 AWS_S3_OBJECT_PARAMETERS = {
-    "CacheControl": 'max-age=86400'
+    "CacheControl": "max-age=86400",
+    "ACL": "public-read"
 }
-MEDIAFILES_LOCATION = 'media'
-DEFAULT_FILE_STORAGE = 'project.storage_backends.MediaStorage'
+MEDIAFILES_LOCATION = "media"
+DEFAULT_FILE_STORAGE = "project.storage_backends.MediaStorage"

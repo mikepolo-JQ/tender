@@ -21,9 +21,8 @@ class IsYouOrIsAdminOrReadOnly(permissions.BasePermission):
 
 
 def delete_file_from_s3(file_name: str) -> bool:
-
     """
-    Delete file from AWS S3 Bucket
+    Delete media file from AWS S3 Bucket by its name
     """
 
     bucket = settings.AWS_STORAGE_BUCKET_NAME
