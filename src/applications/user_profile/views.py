@@ -14,7 +14,9 @@ from applications.user_profile.service import (
 
 
 class UserProfileView(generics.RetrieveUpdateAPIView):
-    permission_classes = [IsYouOrIsAdminOrReadOnly, ]
+    permission_classes = [
+        IsYouOrIsAdminOrReadOnly,
+    ]
 
     model = User
     queryset = User.objects.filter()

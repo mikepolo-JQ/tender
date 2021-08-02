@@ -10,50 +10,71 @@ class Migration(migrations.Migration):
     initial = True
 
     dependencies = [
-        ('offer', '0001_initial'),
+        ("offer", "0001_initial"),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
-        ('contenttypes', '0002_remove_content_type_name'),
+        ("contenttypes", "0002_remove_content_type_name"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='review',
-            name='author',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='my_reviews', to=settings.AUTH_USER_MODEL),
+            model_name="review",
+            name="author",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="my_reviews",
+                to=settings.AUTH_USER_MODEL,
+            ),
         ),
         migrations.AddField(
-            model_name='review',
-            name='content_type',
-            field=models.ForeignKey(default=None, on_delete=django.db.models.deletion.CASCADE, to='contenttypes.contenttype'),
+            model_name="review",
+            name="content_type",
+            field=models.ForeignKey(
+                default=None,
+                on_delete=django.db.models.deletion.CASCADE,
+                to="contenttypes.contenttype",
+            ),
         ),
         migrations.AddField(
-            model_name='review',
-            name='likers',
+            model_name="review",
+            name="likers",
             field=models.ManyToManyField(to=settings.AUTH_USER_MODEL),
         ),
         migrations.AddField(
-            model_name='review',
-            name='parent',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='children', to='offer.review'),
+            model_name="review",
+            name="parent",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="children",
+                to="offer.review",
+            ),
         ),
         migrations.AddField(
-            model_name='offer',
-            name='categories',
-            field=models.ManyToManyField(related_name='offers', to='offer.Category'),
+            model_name="offer",
+            name="categories",
+            field=models.ManyToManyField(related_name="offers", to="offer.Category"),
         ),
         migrations.AddField(
-            model_name='offer',
-            name='store',
-            field=models.ForeignKey(default=None, on_delete=django.db.models.deletion.CASCADE, related_name='offers', to='offer.store'),
+            model_name="offer",
+            name="store",
+            field=models.ForeignKey(
+                default=None,
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="offers",
+                to="offer.store",
+            ),
         ),
         migrations.AddField(
-            model_name='offer',
-            name='types',
-            field=models.ManyToManyField(related_name='offers', to='offer.Type'),
+            model_name="offer",
+            name="types",
+            field=models.ManyToManyField(related_name="offers", to="offer.Type"),
         ),
         migrations.AddField(
-            model_name='offer',
-            name='users',
-            field=models.ManyToManyField(related_name='offers', to=settings.AUTH_USER_MODEL),
+            model_name="offer",
+            name="users",
+            field=models.ManyToManyField(
+                related_name="offers", to=settings.AUTH_USER_MODEL
+            ),
         ),
     ]
