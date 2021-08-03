@@ -21,13 +21,19 @@ class StoreListSerializer(serializers.ModelSerializer):
         fields = ["id", "name", "description", "rating", "offers"]
 
 
+class StoreLightSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Store
+        fields = ["id", "name"]
+
+
 class OfferDetailSerializer(serializers.ModelSerializer):
 
     categories = serializers.SlugRelatedField(
         slug_field="name", read_only=True, many=True
     )
     types = serializers.SlugRelatedField(slug_field="name", read_only=True, many=True)
-    store = StoreListSerializer()
+    store = StoreLightSerializer()
 
     class Meta:
         model = Offer
