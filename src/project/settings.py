@@ -31,6 +31,7 @@ INSTALLED_APPS = [
     "rest_framework.authtoken",
     "djoser",
     "django_filters",
+    "storages",
     # -----------------------------------
     "applications.user_profile",
     "applications.offer",
@@ -116,8 +117,8 @@ USE_TZ = True
 
 STATIC_URL = "/static/"
 
-# Default primary key field type
-# https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field
+MEDIA_ROOT = os.path.join(BASE_DIR, "media")
+MEDIA_URL = "/media/"
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
@@ -149,3 +150,12 @@ CELERY_RESULT_BACKEND = REDIS_URL
 CELERY_ACCEPT_CONTENT = ["application/json"]
 CELERY_TASK_SERIALIZER = "json"
 CELERY_RESULT_SERIALIZER = "json"
+
+# AWS Configurations
+AWS_ACCESS_KEY_ID = _ds.AWS_KEY_ID
+AWS_SECRET_ACCESS_KEY = _ds.AWS_SECRET_KEY
+AWS_STORAGE_BUCKET_NAME = _ds.AWS_BUCKET_NAME
+AWS_S3_CUSTOM_DOMAIN = f"{AWS_STORAGE_BUCKET_NAME}.s3.amazonaws.com"
+AWS_S3_OBJECT_PARAMETERS = {"CacheControl": "max-age=86400", "ACL": "public-read"}
+MEDIAFILES_LOCATION = "media"
+DEFAULT_FILE_STORAGE = "project.storage_backends.MediaStorage"

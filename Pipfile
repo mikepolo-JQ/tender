@@ -17,6 +17,9 @@ djoser = "*"
 ipython = "*"
 celery = "*"
 redis = "*"
+boto3 = "*"
+django-storages = "*"
+pytest = "*"
 
 [dev-packages]
 

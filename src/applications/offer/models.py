@@ -45,9 +45,9 @@ class Type(AbstractOfferProperty):
 
 class Review(models.Model):
     content_type = models.ForeignKey(
-        ContentType, on_delete=models.CASCADE, default=None
+        ContentType, on_delete=models.CASCADE, default=None, null=True, blank=True
     )
-    object_id = models.PositiveIntegerField(default=None)
+    object_id = models.PositiveIntegerField(null=True, blank=True, default=None)
     owner = GenericForeignKey()
 
     author = models.ForeignKey(

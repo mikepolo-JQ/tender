@@ -29,7 +29,7 @@ class OwnerReviewsListView(generics.ListCreateAPIView):
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
 
     model = Review
-    serializer_class = serializers.ReviewSerializer
+    serializer_class = serializers.ReviewListSerializer
 
     def get_owner_class(self):
         class_name = self.request.path.split("/")[2]
@@ -83,7 +83,7 @@ class StoreDetailView(generics.RetrieveAPIView):
 # //////////////////////// REVIEWS ///////////////////////////////
 class ReviewDetailView(generics.RetrieveUpdateDestroyAPIView):
     model = Review
-    serializer_class = serializers.ReviewSerializer
+    serializer_class = serializers.ReviewDetailSerializer
     queryset = Review.objects.filter()
     permission_classes = [permissions.IsAuthenticatedOrReadOnly, IsOwnerOrReadOnly]
 
