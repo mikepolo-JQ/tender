@@ -1,7 +1,6 @@
 import json
 import os
 import random
-from typing import Optional, Tuple
 
 from django.conf import settings
 from rest_framework.test import APITestCase
@@ -57,17 +56,17 @@ class OfferAppTests(APITestCase):
             raise User.DoesNotExist("Unable to log in with provided credentials")
         return token
 
-    # def test_data_update_from_API(self):
-    #     response = tasks.update_data_file()
-    #     response_dict = json.loads(response)
-    #
-    #     self.assertTrue(response_dict["uploaded_count"])
-    #
-    #     global offers_count
-    #     offers_count = response_dict["uploaded_count"]
-    #
-    #     self.assertJSONEqual(response, {"ok": True, "uploaded_count": offers_count})
-    #
+    def test_data_update_from_API(self):
+        response = tasks.update_data_file()
+        response_dict = json.loads(response)
+
+        self.assertTrue(response_dict["uploaded_count"])
+
+        global offers_count
+        offers_count = response_dict["uploaded_count"]
+
+        self.assertJSONEqual(response, {"ok": True, "uploaded_count": offers_count})
+
     def _data_upload(self):
         response = tasks.upload_data_from_file_to_the_db()
         self.assertJSONEqual(
@@ -138,10 +137,12 @@ class OfferAppTests(APITestCase):
 
     # Testing user data in format UserListSerializer
     def user_list_format_tst(self, user):
-        self.assertTrue(user['id'])
-        self.assertEqual(type(user['id']), int)
+        self.assertTrue(user["id"])
+        self.assertEqual(type(user["id"]), int)
         self.assertEqual(type(user["username"]), str)
-        self.assertTrue(user["avatar"].startswith(f"https://{settings.AWS_S3_CUSTOM_DOMAIN}/media/"))
+        self.assertTrue(
+            user["avatar"].startswith(f"https://{settings.AWS_S3_CUSTOM_DOMAIN}/media/")
+        )
 
     # Testing reviews data in format ReviewListSerializer
     # Set filter to True to disable certain checks (for ReviewDetailSerializer)
@@ -162,7 +163,7 @@ class OfferAppTests(APITestCase):
         self.assertTrue(review["created_at"])
         self.assertTrue(review["updated_at"])
 
-        self.user_list_format_tst(review['author'])
+        self.user_list_format_tst(review["author"])
 
     # Testing reviews data in format ReviewDetailSerializer
     def review_detail_format_tst(self, like_author):
@@ -173,7 +174,7 @@ class OfferAppTests(APITestCase):
         self.assertEqual(type(review["content_type"]), str)
         self.assertTrue(review["content_type"])
 
-        owner = review['owner']
+        owner = review["owner"]
         test_worker = {
             "offer": self.offer_list_format_tst,
             "store": self.store_list_format_tst,
@@ -203,8 +204,12 @@ class OfferAppTests(APITestCase):
         owner = owner_model.objects.get(pk=owner_id)
 
         for _ in range(reviews_count):
-            r = Review.objects.create(author=author, owner=owner, content=get_test_content())
-            Review.objects.create(author=author, owner=owner, content=get_test_content(), parent=r)
+            r = Review.objects.create(
+                author=author, owner=owner, content=get_test_content()
+            )
+            Review.objects.create(
+                author=author, owner=owner, content=get_test_content(), parent=r
+            )
 
         response = self.client.get(f"/api/{owner_type.lower()}/{owner_id}/reviews/")
 
@@ -218,14 +223,13 @@ class OfferAppTests(APITestCase):
 
         test_content = get_test_content()
         test_rating_value = 5
-        data = {
-            "content": test_content,
-            "rating_value": test_rating_value
-        }
+        data = {"content": test_content, "rating_value": test_rating_value}
 
         token = self._login(author)
         self.client.credentials(HTTP_AUTHORIZATION=f"Token {token}")
-        response = self.client.post(f"/api/{owner_type.lower()}/{owner_id}/reviews/", data=data)
+        response = self.client.post(
+            f"/api/{owner_type.lower()}/{owner_id}/reviews/", data=data
+        )
         self.assertEquals(response.status_code, 201)
         self.review_list_format_tst(response.data)
         self.assertEqual(response.data["content"], test_content)
@@ -260,7 +264,9 @@ class OfferAppTests(APITestCase):
         self.offer_detail_format_tst(offer)
 
         # Offer list Review test
-        self.owner_list_review_tst(owner_type="offer", owner_id=random_offer_id, author=author)
+        self.owner_list_review_tst(
+            owner_type="offer", owner_id=random_offer_id, author=author
+        )
 
         # Review detail test
         self.review_detail_format_tst(like_author=author)
@@ -281,19 +287,6 @@ class OfferAppTests(APITestCase):
             self.offer_detail_format_tst(offer)
 
         # Store list Review test
-        self.owner_list_review_tst(owner_type="store", owner_id=random_store_id, author=author)
-
-    # def test_review(self):
-
-
-
-    # # List of offers reviews test
-    # def test_review(self):
-    #     self._data_upload()
-    #
-    #     offer, review = create_objects_for_test_review()
-    #
-    #     response = self.client.get(f"/api/offer/{offer.pk}/reviews/")
-    #     print(response.data, "----------------------------------")
-    #
-    #     print(response.data, "AFTER")
+        self.owner_list_review_tst(
+            owner_type="store", owner_id=random_store_id, author=author
+        )

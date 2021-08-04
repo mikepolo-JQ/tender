@@ -90,8 +90,12 @@ class ReviewDetailSerializer(serializers.ModelSerializer):
     def get_owner(self, review):
         try:
             owner_names_dict = {
-                "store": StoreListSerializer(Store.objects.get(pk=review.owner.pk)).data,
-                "offer": OfferListSerializer(Offer.objects.get(pk=review.owner.pk)).data,
+                "store": StoreListSerializer(
+                    Store.objects.get(pk=review.owner.pk)
+                ).data,
+                "offer": OfferListSerializer(
+                    Offer.objects.get(pk=review.owner.pk)
+                ).data,
             }
         except Store.DoesNotExist:
             return OfferListSerializer(Offer.objects.get(pk=review.owner.pk)).data
