@@ -65,25 +65,38 @@ class FilterReviewListSerializer(serializers.ListSerializer):
         return super().to_representation(data)
 
 
-class ReviewSerializer(serializers.ModelSerializer):
-    author = UserListSerializer()
+class ReviewListSerializer(serializers.ModelSerializer):
+    author = UserListSerializer(read_only=True)
     likes_count = serializers.SerializerMethodField()
-    content_type = serializers.SlugRelatedField(slug_field="name", read_only=True)
-    owner = serializers.SerializerMethodField()
     rating_value = serializers.IntegerField(min_value=0, max_value=5)
-    children = RecursiveSerializer(many=True)
+    children = RecursiveSerializer(many=True, read_only=True)
 
     def get_likes_count(self, review):
         return review.likers.count()
 
-    def get_owner(self, review):
-        owner_names_dict = {
-            "store": StoreListSerializer(Store.objects.get(pk=review.owner.pk)).data,
-            "offer": OfferListSerializer(Offer.objects.get(pk=review.owner.pk)).data,
-        }
-        return owner_names_dict[review.content_type.name]
-
     class Meta:
         list_serializer_class = FilterReviewListSerializer
         model = Review
-        exclude = ["likers", "object_id", "parent"]
+        exclude = ["likers", "object_id", "parent", "content_type"]
+
+
+class ReviewDetailSerializer(serializers.ModelSerializer):
+    author = UserListSerializer()
+    likers = UserListSerializer(many=True)
+    content_type = serializers.SlugRelatedField(slug_field="name", read_only=True)
+    owner = serializers.SerializerMethodField()
+    rating_value = serializers.IntegerField(min_value=0, max_value=5)
+
+    def get_owner(self, review):
+        try:
+            owner_names_dict = {
+                "store": StoreListSerializer(Store.objects.get(pk=review.owner.pk)).data,
+                "offer": OfferListSerializer(Offer.objects.get(pk=review.owner.pk)).data,
+            }
+        except Store.DoesNotExist:
+            return OfferListSerializer(Offer.objects.get(pk=review.owner.pk)).data
+        return owner_names_dict[review.content_type.name]
+
+    class Meta:
+        model = Review
+        exclude = ["object_id", "parent"]

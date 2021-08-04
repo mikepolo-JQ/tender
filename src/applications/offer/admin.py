@@ -2,11 +2,16 @@ from django.contrib import admin
 
 
 # Register your models here.
-from applications.offer.models import Offer, Review, Category, Type
+from applications.offer.models import Offer, Review, Store, Category, Type
 
 
 @admin.register(Offer)
 class OfferAdminModel(admin.ModelAdmin):
+    pass
+
+
+@admin.register(Store)
+class StoreAdminModel(admin.ModelAdmin):
     pass
 
 
