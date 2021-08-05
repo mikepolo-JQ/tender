@@ -1,53 +1,35 @@
-# chat/consumers.py
 import json
-from datetime import datetime
 
 from asgiref.sync import async_to_sync
 from channels.generic.websocket import WebsocketConsumer
-from channels.layers import get_channel_layer
+
 
 from applications.chat.models import Chat, Message
-from applications.user_profile.models import User
+from applications.chat.serializers import MessageSerializer
+from applications.chat.service import access_for_chat
+
+from applications.user_profile.serializers import UserListSerializer
 
 
-def writes_message(s, data):
-    talker_pk = data["talker_pk"]
-    chat_pk = data["chat_pk"]
+def typing_message(s, data):
 
     # Send message to talker
     async_to_sync(s.channel_layer.group_send)(
-        f"chat_{chat_pk}",
+        s.room_group_name,
         {
             "type": "is_typing",
             "command": data["command"],
-            "author": data["author"],
-            "chat_pk": data["chat_pk"],
-        },
-    )
-
-
-def copy_message(s, data):
-    message_pk = data["message_pk"]
-    author_pk = data["author_pk"]
-
-    message = Message.objects.filter(pk=message_pk).first()
-
-    async_to_sync(s.channel_layer.group_send)(
-        f"profile_{author_pk}",
-        {
-            "type": "copy_for_author",
-            "content": message.content,
-            "message_pk": message.pk,
-            "author_pk": author_pk,
-            "datetime": message.get_datetime,
-            "chat_pk": data["chat_pk"],
+            "author": UserListSerializer(s.scope["user"]).data,
         },
     )
 
 
 # CREATE and send message to room group
 def create_message(s, data):
-    content = data["content"]
+
+    msg = Message.objects.create(
+        content=data["content"], author=s.scope["user"], chat_id=s.chat_name
+    )
 
     # Send message to room group
     async_to_sync(s.channel_layer.group_send)(
@@ -55,35 +37,33 @@ def create_message(s, data):
         {
             "type": "chat_message",
             "command": "create",
-            "content": content,
+            "message": MessageSerializer(msg).data,
         },
     )
 
 
 # DELETE and send message to room group
 def delete_messages(s, data):
-    message_pk_list = data["pk_list"]
-    chat_pk = data["chat_pk"]
+    message_pk_list = data["message_pk_list"]
+    user = s.scope["user"]
 
     message_deleted_list = list()
     message_failed_list = list()
 
     for pk in message_pk_list:
         try:
-            Message.objects.get(pk=pk).delete()
+            Message.objects.get(pk=pk, author=user).delete()
             message_deleted_list.append(pk)
-        except:
+        except Message.DoesNotExist:
             message_failed_list.append(pk)
 
     # Send message to room group
     async_to_sync(s.channel_layer.group_send)(
-        s.group_name,
+        s.room_group_name,
         {
             "type": "delete_message",
             "message_deleted_list": message_deleted_list,
             "message_failed_list": message_failed_list,
-            "chat_pk": chat_pk,
-            "author_pk": data["author_pk"],
         },
     )
 
@@ -91,14 +71,19 @@ def delete_messages(s, data):
 command_handlers = {
     "create": create_message,
     "delete": delete_messages,
-    "typing": writes_message,
+    "typing": typing_message,
 }
 
 
 class ChatConsumer(WebsocketConsumer):
     def connect(self):
-        self.room_name = self.scope["url_route"]["kwargs"]["room_name"]
-        self.room_group_name = f"room_{self.room_name}"
+        self.chat_name = self.scope["url_route"]["kwargs"]["chat_name"]
+        self.room_group_name = f"room_{self.chat_name}"
+        self.permissions = True
+
+        if not access_for_chat(user=self.scope["user"], chat_pk=self.chat_name):
+            self.permissions = False
+            self.room_group_name = f"user_pk_{self.scope['user'].pk}"
 
         # Join room group
         async_to_sync(self.channel_layer.group_add)(
@@ -115,6 +100,15 @@ class ChatConsumer(WebsocketConsumer):
 
     # Receive message from WebSocket
     def receive(self, text_data):
+
+        # permissions check
+        if not self.permissions:
+            async_to_sync(self.channel_layer.group_send)(
+                self.room_group_name,
+                {"type": "no_access"},
+            )
+            return
+
         text_data_json = json.loads(text_data)
 
         command = text_data_json["command"]
@@ -122,46 +116,40 @@ class ChatConsumer(WebsocketConsumer):
 
     # Receive message from room group
     def chat_message(self, event):
-        content = event["content"]
+
+        # Send message to WebSocket
+        self.send(
+            text_data=json.dumps({"command": "create", "message": event["message"]})
+        )
+
+    def no_access(self, _event):
+        self.send(
+            text_data=json.dumps(
+                {"detail": "You do not have permission to perform this action."}
+            )
+        )
+
+    def delete_message(self, event):
 
         # Send message to WebSocket
         self.send(
             text_data=json.dumps(
                 {
-                    "command": "create",
-                    "content": content,
-                    # "message_pk": pk,
-                    # "author_pk": author_pk,
-                    # "datetime": datetime,
-                    # "chat_pk": chat_pk,
+                    "command": "delete",
+                    "message_deleted_list": event["message_deleted_list"],
+                    "message_failed_list": event["message_failed_list"],
                 }
             )
         )
 
-    # def delete_message(self, event):
-    #
-    #     # Send message to WebSocket
-    #     self.send(
-    #         text_data=json.dumps(
-    #             {
-    #                 "command": "delete",
-    #                 "message_deleted_list": event["message_deleted_list"],
-    #                 "message_failed_list": event["message_failed_list"],
-    #                 "chat_pk": event["chat_pk"],
-    #                 "author_pk": event["author_pk"],
-    #             }
-    #         )
-    #     )
-    #
-    # def is_typing(self, event):
-    #
-    #     # Send message to WebSocket
-    #     self.send(
-    #         text_data=json.dumps(
-    #             {
-    #                 "command": event["command"],
-    #                 "author": event["author"],
-    #                 "chat_pk": event["chat_pk"],
-    #             }
-    #         )
-    #     )
+    def is_typing(self, event):
+
+        # Send message to WebSocket
+        self.send(
+            text_data=json.dumps(
+                {
+                    "command": event["command"],
+                    "author": event["author"],
+                }
+            )
+        )

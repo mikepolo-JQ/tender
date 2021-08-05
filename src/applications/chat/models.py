@@ -1,7 +1,9 @@
 from datetime import datetime, timedelta
+
+from django.conf import settings
 from django.db import models
 
-from applications.user_profile.models import User
+User = settings.AUTH_USER_MODEL
 
 
 class Chat(models.Model):
@@ -15,8 +17,8 @@ class Chat(models.Model):
 
     @property
     def last_message(self):
-        self.message_set.update()
-        last = self.message_set.all().last()
+        self.messages.update()
+        last = self.messages.all().last()
         return last
 
     def __str__(self):
@@ -27,11 +29,13 @@ class Chat(models.Model):
 
 
 class Message(models.Model):
-    created_at = models.DateTimeField(default=datetime.now)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    edited = models.BooleanField(default=False)
 
     content = models.TextField(null=False, default="content")
 
-    chat = models.ForeignKey(Chat, on_delete=models.CASCADE)
+    chat = models.ForeignKey(Chat, on_delete=models.CASCADE, related_name="messages")
     author = models.ForeignKey(User, on_delete=models.CASCADE)
 
     @property
