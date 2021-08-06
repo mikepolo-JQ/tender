@@ -78,8 +78,42 @@ def delete_messages(s, data):
     )
 
 
+def update_message(s, data):
+
+    try:
+        msg_content = data["content"]
+        message_pk = data["message_pk"]
+    except KeyError:
+        async_to_sync(s.channel_layer.group_send)(
+            s.user_room_name,
+            {"type": "error_response", "detail": "Bad request."},
+        )
+        return
+
+    try:
+        msg = Message.objects.get(pk=message_pk)
+        msg.content = msg_content
+        msg.save()
+    except Message.DoesNotExist:
+        async_to_sync(s.channel_layer.group_send)(
+            s.user_room_name,
+            {"type": "error_response", "detail": "Message isn't found."},
+        )
+        return
+
+    # Send message to room group
+    async_to_sync(s.channel_layer.group_send)(
+        s.room_group_name,
+        {
+            "type": "message_update",
+            "message": MessageSerializer(msg).data,
+        },
+    )
+
+
 command_handlers = {
     "create": create_message,
+    "update": update_message,
     "delete": delete_messages,
     "typing": typing_message,
 }
@@ -148,6 +182,14 @@ class ChatConsumer(WebsocketConsumer):
         # Send message to WebSocket
         self.send(
             text_data=json.dumps({"command": "create", "message": event["message"]})
+        )
+
+    def message_update(self, event):
+        self.send(
+            text_data=json.dumps({
+                "command": "update_message",
+                "message": event["message"]
+            })
         )
 
     def error_response(self, event):
