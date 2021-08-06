@@ -18,5 +18,8 @@ def access_for_chat(user, chat_pk):
     """
     permissions AccessForChat for WebSocket
     """
-    chat = Chat.objects.get(pk=chat_pk)
+    try:
+        chat = Chat.objects.get(pk=chat_pk)
+    except Chat.DoesNotExist:
+        return False
     return user in chat.users.all()

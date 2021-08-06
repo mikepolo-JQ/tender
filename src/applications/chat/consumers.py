@@ -1,6 +1,7 @@
 import json
 
-from asgiref.sync import async_to_sync
+from asgiref.sync import async_to_sync, sync_to_async
+from channels.exceptions import StopConsumer
 from channels.generic.websocket import WebsocketConsumer
 
 
@@ -19,7 +20,7 @@ def typing_message(s, data):
         {
             "type": "is_typing",
             "command": data["command"],
-            "author": UserListSerializer(s.scope["user"]).data,
+            "author": UserListSerializer(s.user).data,
         },
     )
 
@@ -27,8 +28,17 @@ def typing_message(s, data):
 # CREATE and send message to room group
 def create_message(s, data):
 
+    try:
+        msg_content = data["content"]
+    except KeyError:
+        async_to_sync(s.channel_layer.group_send)(
+            s.user_room_name,
+            {"type": "error_response", "detail": "Content isn't found."},
+        )
+        return
+
     msg = Message.objects.create(
-        content=data["content"], author=s.scope["user"], chat_id=s.chat_name
+        content=msg_content, author=s.user, chat_id=s.chat_name
     )
 
     # Send message to room group
@@ -45,7 +55,7 @@ def create_message(s, data):
 # DELETE and send message to room group
 def delete_messages(s, data):
     message_pk_list = data["message_pk_list"]
-    user = s.scope["user"]
+    user = s.user
 
     message_deleted_list = list()
     message_failed_list = list()
@@ -79,40 +89,58 @@ class ChatConsumer(WebsocketConsumer):
     def connect(self):
         self.chat_name = self.scope["url_route"]["kwargs"]["chat_name"]
         self.room_group_name = f"room_{self.chat_name}"
-        self.permissions = True
+        self.permissions = False
+        self.user = self.scope["user"]
+        self.user_room_name = f"user_{self.user.pk}"
 
-        if not access_for_chat(user=self.scope["user"], chat_pk=self.chat_name):
-            self.permissions = False
-            self.room_group_name = f"user_pk_{self.scope['user'].pk}"
+        if access_for_chat(user=self.user, chat_pk=self.chat_name):
 
-        # Join room group
+            self.permissions = True
+
+            async_to_sync(self.channel_layer.group_add)(
+                self.room_group_name, self.channel_name
+            )
+
         async_to_sync(self.channel_layer.group_add)(
-            self.room_group_name, self.channel_name
+            self.user_room_name, self.channel_name
         )
 
         self.accept()
+
+        # permissions check
+        if not self.permissions:
+            async_to_sync(self.channel_layer.group_send)(
+                self.user_room_name,
+                {
+                    "type": "error_response",
+                    "detail": "You do not have permission to perform this action.",
+                    "disconnect": True
+                },
+            )
 
     def disconnect(self, close_code):
         # Leave room group
         async_to_sync(self.channel_layer.group_discard)(
             self.room_group_name, self.channel_name
         )
+        async_to_sync(self.channel_layer.group_discard)(
+            self.user_room_name, self.channel_name
+        )
 
     # Receive message from WebSocket
     def receive(self, text_data):
 
-        # permissions check
-        if not self.permissions:
-            async_to_sync(self.channel_layer.group_send)(
-                self.room_group_name,
-                {"type": "no_access"},
-            )
-            return
-
         text_data_json = json.loads(text_data)
 
-        command = text_data_json["command"]
-        command_handlers[command](self, text_data_json)
+        try:
+            command = text_data_json["command"]
+            command_handlers[command](self, text_data_json)
+        except KeyError:
+            async_to_sync(self.channel_layer.group_send)(
+                self.user_room_name,
+                {"type": "error_response", "detail": "Command isn't found."},
+            )
+            return
 
     # Receive message from room group
     def chat_message(self, event):
@@ -122,12 +150,17 @@ class ChatConsumer(WebsocketConsumer):
             text_data=json.dumps({"command": "create", "message": event["message"]})
         )
 
-    def no_access(self, _event):
+    def error_response(self, event):
         self.send(
             text_data=json.dumps(
-                {"detail": "You do not have permission to perform this action."}
+                {"detail": event["detail"]}
             )
         )
+        try:
+            if event["disconnect"]:
+                self.close(1000)
+        except KeyError:
+            pass
 
     def delete_message(self, event):
 
