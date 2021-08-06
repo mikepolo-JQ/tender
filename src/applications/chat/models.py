@@ -7,7 +7,7 @@ User = settings.AUTH_USER_MODEL
 
 
 class Chat(models.Model):
-    name = models.CharField(null=False, max_length=50, default="chat")
+    name = models.CharField(null=True, blank=True, max_length=50, default=None)
     updated_at = models.DateTimeField(auto_now=True)
 
     users = models.ManyToManyField(
@@ -22,7 +22,10 @@ class Chat(models.Model):
         return last
 
     def __str__(self):
-        return f"{self.name}"
+        string_name = "chat:"
+        for user in self.users.all():
+            string_name += f" {user.username}"
+        return string_name
 
     class Meta:
         ordering = ["-updated_at"]

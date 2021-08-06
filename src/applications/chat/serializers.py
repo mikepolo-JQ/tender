@@ -28,3 +28,12 @@ class MessageSerializer(serializers.ModelSerializer):
     class Meta:
         model = Message
         exclude = ["chat", "created_at", "updated_at"]
+
+
+class ChatCreateSerializer(serializers.ModelSerializer):
+
+    name = serializers.ReadOnlyField()
+
+    class Meta:
+        model = Chat
+        fields = "__all__"

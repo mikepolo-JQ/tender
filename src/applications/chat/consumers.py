@@ -114,7 +114,7 @@ class ChatConsumer(WebsocketConsumer):
                 {
                     "type": "error_response",
                     "detail": "You do not have permission to perform this action.",
-                    "disconnect": True
+                    "disconnect": True,
                 },
             )
 
@@ -151,11 +151,7 @@ class ChatConsumer(WebsocketConsumer):
         )
 
     def error_response(self, event):
-        self.send(
-            text_data=json.dumps(
-                {"detail": event["detail"]}
-            )
-        )
+        self.send(text_data=json.dumps({"detail": event["detail"]}))
         try:
             if event["disconnect"]:
                 self.close(1000)
