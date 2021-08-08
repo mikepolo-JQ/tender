@@ -6,3 +6,6 @@ from django.db import models
 class User(AbstractUser):
     contacts = models.ManyToManyField("self", related_name="contact_of")
     avatar = models.ImageField(blank=True, null=True, default="avatar.png")
+
+    def get_group_name(self):
+        return f"user_{self.pk}"

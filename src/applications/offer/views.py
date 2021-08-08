@@ -4,7 +4,7 @@ from rest_framework.response import Response
 
 from applications.offer.models import Offer, Store, Review
 from applications.offer import serializers, tasks
-from applications.offer.service import OfferFilter, IsOwnerOrReadOnly
+from applications.offer.services import OfferFilter, IsOwnerOrReadOnly
 
 
 class OfferListView(generics.ListAPIView):

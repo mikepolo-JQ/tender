@@ -7,7 +7,7 @@ from channels.generic.websocket import WebsocketConsumer
 
 from applications.chat.models import Chat, Message
 from applications.chat.serializers import MessageSerializer
-from applications.chat.service import access_for_chat
+from applications.chat.services import access_for_chat
 
 from applications.user_profile.serializers import UserListSerializer
 
@@ -37,9 +37,7 @@ def create_message(s, data):
         )
         return
 
-    msg = Message.objects.create(
-        content=msg_content, author=s.user, chat_id=s.chat_name
-    )
+    msg = Message.objects.create(content=msg_content, author=s.user, chat_id=s.chat_pk)
 
     # Send message to room group
     async_to_sync(s.channel_layer.group_send)(
@@ -121,13 +119,13 @@ command_handlers = {
 
 class ChatConsumer(WebsocketConsumer):
     def connect(self):
-        self.chat_name = self.scope["url_route"]["kwargs"]["chat_name"]
-        self.room_group_name = f"room_{self.chat_name}"
+        self.chat_pk = self.scope["url_route"]["kwargs"]["chat_pk"]
+        self.room_group_name = f"room_{self.chat_pk}"
         self.permissions = False
         self.user = self.scope["user"]
         self.user_room_name = f"user_{self.user.pk}"
 
-        if access_for_chat(user=self.user, chat_pk=self.chat_name):
+        if access_for_chat(user=self.user, chat_pk=self.chat_pk):
 
             self.permissions = True
 
@@ -186,10 +184,9 @@ class ChatConsumer(WebsocketConsumer):
 
     def message_update(self, event):
         self.send(
-            text_data=json.dumps({
-                "command": "update_message",
-                "message": event["message"]
-            })
+            text_data=json.dumps(
+                {"command": "update_message", "message": event["message"]}
+            )
         )
 
     def error_response(self, event):

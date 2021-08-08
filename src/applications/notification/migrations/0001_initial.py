@@ -11,7 +11,7 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.CreateModel(
-            name="Chat",
+            name="Notification",
             fields=[
                 (
                     "id",
@@ -28,31 +28,13 @@ class Migration(migrations.Migration):
                         blank=True, default=None, max_length=50, null=True
                     ),
                 ),
-                ("updated_at", models.DateTimeField(auto_now=True)),
-            ],
-            options={
-                "ordering": ["-updated_at"],
-            },
-        ),
-        migrations.CreateModel(
-            name="Message",
-            fields=[
-                (
-                    "id",
-                    models.BigAutoField(
-                        auto_created=True,
-                        primary_key=True,
-                        serialize=False,
-                        verbose_name="ID",
-                    ),
-                ),
                 ("created_at", models.DateTimeField(auto_now_add=True)),
-                ("updated_at", models.DateTimeField(auto_now=True)),
-                ("edited", models.BooleanField(default=False)),
-                ("content", models.TextField(default="content")),
+                ("content", models.TextField(null=True)),
+                ("viewed", models.BooleanField(default=False)),
+                ("json_data", models.JSONField(blank=True, default=None, null=True)),
             ],
             options={
-                "ordering": ["created_at"],
+                "ordering": ["-created_at"],
             },
         ),
     ]

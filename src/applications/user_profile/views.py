@@ -7,7 +7,7 @@ from applications.user_profile.models import User
 from rest_framework import generics, permissions
 
 from applications.user_profile import serializers
-from applications.user_profile.service import (
+from applications.user_profile.services import (
     IsYouOrIsAdminOrReadOnly,
     delete_file_from_s3,
 )
