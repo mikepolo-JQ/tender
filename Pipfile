@@ -23,6 +23,7 @@ pytest = "*"
 channels = "*"
 channels-redis = "*"
 pytest-asyncio = "*"
+atomicwrites = "*"
 
 [dev-packages]
 

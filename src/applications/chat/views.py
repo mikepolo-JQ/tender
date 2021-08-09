@@ -4,7 +4,7 @@ from rest_framework.response import Response
 
 from applications.chat import serializers
 from applications.chat.models import Message, Chat
-from applications.chat.service import AccessForChat
+from applications.chat.services import AccessForChat
 
 
 class TestChatView(TemplateView):
@@ -12,7 +12,9 @@ class TestChatView(TemplateView):
 
 
 class MessageListView(generics.ListAPIView, generics.DestroyAPIView):
-    permission_classes = [AccessForChat, ]
+    permission_classes = [
+        AccessForChat,
+    ]
 
     model = Message
     serializer_class = serializers.MessageSerializer

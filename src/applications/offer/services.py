@@ -1,7 +1,11 @@
 from django_filters import rest_framework as filters
 from rest_framework import permissions
+from rest_framework.response import Response
+from rest_framework import status
 
-from applications.offer.models import Offer
+from applications.notification.models import Notification
+from applications.offer.models import Offer, User
+from applications.user_profile.serializers import UserListSerializer
 
 
 class CharFilterInFilter(filters.BaseInFilter, filters.CharFilter):
@@ -33,3 +37,23 @@ class IsOwnerOrReadOnly(permissions.BasePermission):
             return True
 
         return obj.author == request.user
+
+
+def user_offers_add_delete(self, request, **kwargs):
+    user = self.request.user
+
+    add_or_delete = {
+        "add": user.offers.add,
+        "delete": user.offers.remove
+    }.get(kwargs.get("command"))
+
+    try:
+        offer = Offer.objects.get(pk=kwargs.get("pk"))
+        add_or_delete(offer)
+
+        return Response(status.HTTP_200_OK)
+    except Offer.DoesNotExist:
+        return Response(status.HTTP_404_NOT_FOUND)
+
+
+

@@ -24,4 +24,9 @@ app.conf.beat_schedule = {
         "task": "offer.tasks.upload_data_from_file_to_the_db",
         "schedule": crontab(minute=1, hour=0),
     },
+
+    "create-notification-for-ending-offers-at-00-00": {
+        "task": "applications.offer.tasks.check_the_end_of_my_offer",
+        "schedule": crontab(minute=0, hour=0),
+    }
 }

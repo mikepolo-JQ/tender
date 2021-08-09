@@ -1,15 +1,18 @@
+import json
 import os
 
 from django.conf import settings
 from rest_framework.renderers import JSONRenderer
+from rest_framework.response import Response
+from rest_framework.views import APIView
 
 from applications.user_profile.models import User
 from rest_framework import generics, permissions
 
 from applications.user_profile import serializers
-from applications.user_profile.service import (
+from applications.user_profile.services import (
     IsYouOrIsAdminOrReadOnly,
-    delete_file_from_s3,
+    delete_file_from_s3, user_contacts_add_delete,
 )
 
 
@@ -30,3 +33,13 @@ class UserProfileView(generics.RetrieveUpdateAPIView):
             resp = delete_file_from_s3(old_avatar.name)
             assert resp
         super().perform_update(serializer)
+
+
+class UserAddDeleteToContact(APIView):
+    permission_classes = [permissions.IsAuthenticated, ]
+
+    def patch(self, request, *args, **kwargs):
+        return user_contacts_add_delete(self, request, command="add")
+
+    def delete(self, request, *args, **kwargs):
+        return user_contacts_add_delete(self, request, command="delete")

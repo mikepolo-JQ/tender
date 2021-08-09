@@ -2,9 +2,11 @@ import os
 
 # from channels.routing import get_default_application
 from django.core.asgi import get_asgi_application
-from django.urls import re_path
+from django.urls import re_path, path
 
+from applications.chat.consumers import ChatConsumer
 from applications.chat.middleware.token_auth import TokenAuthMiddlewareStack
+from applications.notification.consumers import NotificationConsumer
 
 django_asgi_app = get_asgi_application()
 
@@ -13,7 +15,6 @@ os.environ.setdefault("DJANGO_SETTINGS_MODULE", "project.settings")
 from channels.auth import AuthMiddlewareStack
 from channels.routing import ProtocolTypeRouter, URLRouter
 
-from applications.chat import consumers
 
 application = ProtocolTypeRouter(
     {
@@ -25,8 +26,12 @@ application = ProtocolTypeRouter(
             URLRouter(
                 [
                     re_path(
-                        r"ws/chat/(?P<chat_name>\w+)/$",
-                        consumers.ChatConsumer.as_asgi(),
+                        r"ws/chat/(?P<chat_pk>\w+)/$",
+                        ChatConsumer.as_asgi(),
+                    ),
+                    path(
+                        "ws/notification/",
+                        NotificationConsumer.as_asgi(),
                     ),
                 ]
             )

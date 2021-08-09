@@ -1,10 +1,11 @@
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import generics, permissions
 from rest_framework.response import Response
+from rest_framework.views import APIView
 
 from applications.offer.models import Offer, Store, Review
 from applications.offer import serializers, tasks
-from applications.offer.service import OfferFilter, IsOwnerOrReadOnly
+from applications.offer.services import OfferFilter, IsOwnerOrReadOnly, user_offers_add_delete
 
 
 class OfferListView(generics.ListAPIView):
@@ -135,3 +136,13 @@ class UploadToTheDBView(generics.views.APIView):
     def get(self, request, *args, **kwargs):
         tasks.upload_data_from_file_to_the_db.delay()
         return Response({"upload": True})
+
+
+class UserAddDeleteOffer(APIView):
+    permission_classes = [permissions.IsAuthenticated, ]
+
+    def patch(self, request, *args, **kwargs):
+        return user_offers_add_delete(self, request, command="add", **kwargs)
+
+    def delete(self, request, *args, **kwargs):
+        return user_offers_add_delete(self, request, command="delete", **kwargs)

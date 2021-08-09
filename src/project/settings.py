@@ -15,6 +15,7 @@ ALLOWED_HOSTS = [
     "localhost",
     "127.0.0.1",
     _ds.HOST,
+    "testserver",
 ]
 
 AUTH_USER_MODEL = "user_profile.User"
@@ -37,6 +38,7 @@ INSTALLED_APPS = [
     "applications.user_profile",
     "applications.offer",
     "applications.chat",
+    "applications.notification",
 ]
 
 MIDDLEWARE = [

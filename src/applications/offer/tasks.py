@@ -1,12 +1,36 @@
 import json
 
+from applications.notification.models import Notification
+from applications.offer.serializers import OfferListSerializer
 from project.celery import app
 from dynaconf import settings as _ds
+from datetime import date, timedelta
 import requests
 
 from applications.offer.models import Offer, Store, Category, Type
 
 file_name = "data.json"
+
+
+@app.task
+def check_the_end_of_my_offer():
+    offers = Offer.objects.all()
+    count = 0
+
+    for offer in offers:
+        if not offer.end_date - date.today() < timedelta(1):
+            continue
+
+        for user in offer.users.all():
+            Notification.objects.create(
+                name="The offer is about to expire.",
+                user=user,
+                json_data=OfferListSerializer(offer).data,
+                content=f"Offer \"{offer.title}\" is about to expire."
+            )
+        count += 1
+
+    return json.dumps({"ok": True, "notification_sent_count": count})
 
 
 @app.task

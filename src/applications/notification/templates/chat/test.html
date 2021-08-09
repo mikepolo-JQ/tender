@@ -1,0 +1,64 @@
+
+{% load static %}
+
+<!DOCTYPE html>
+    <html>
+    <head lang="ru">
+
+        <meta charset="utf-8">
+
+        <title>chat page</title>
+    </head>
+    <body> {# //////////////////////// BODY ///////////////////////////////#}
+
+        <textarea id="chat" style="width: 50%; height: 50%"></textarea>
+        <input id="chat-message-input">
+        <button id="chat-message-submit"></button>
+
+
+        <script>
+            let wsProtokol = window.location.protocol === "https:" ? "wss" : "ws";
+            let chatMessageInput = document.querySelector('#chat-message-input');
+
+            const chatSocket = new WebSocket(
+                wsProtokol + '://'
+                + window.location.host
+                + '/ws/chat/'
+                + 1
+                + '/'
+            );
+
+            chatSocket.onmessage = function (e) {
+                const data = JSON.parse(e.data);
+                console.log(data)
+
+                let text_box = document.getElementById("chat");
+                text_box.innerText += data.content;
+            };
+            chatMessageInput.focus();
+            chatMessageInput.onkeyup = function (e) {
+                if (e.keyCode === 13 && chatMessageInput.value !== "") {  // enter, return
+                    document.querySelector('#chat-message-submit').click();
+                }
+            };
+
+            document.querySelector('#chat-message-submit').onclick = function (e) {
+
+                const content = chatMessageInput.value;
+
+                chatSocket.send(JSON.stringify({
+                    "command":"create",
+                    'content': content,
+                }));
+
+                chatMessageInput.value = '';
+            };
+
+
+            chatSocket.onclose = function (e) {
+                console.error('Chat socket closed unexpectedly');
+            };
+        </script>
+
+    </body>
+    </html>
