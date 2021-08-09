@@ -33,11 +33,13 @@ def check_the_end_of_my_offer():
 
         offer_ending_count += 1
 
-    return json.dumps({
-        "ok": True,
-        "notification_sent_count": notification_sent_count,
-        "offer_ending_count": offer_ending_count
-    })
+    return json.dumps(
+        {
+            "ok": True,
+            "notification_sent_count": notification_sent_count,
+            "offer_ending_count": offer_ending_count,
+        }
+    )
 
 
 @app.task
