@@ -32,9 +32,11 @@ INSTALLED_APPS = [
     "djoser",
     "django_filters",
     "storages",
+    "channels",
     # -----------------------------------
     "applications.user_profile",
     "applications.offer",
+    "applications.chat",
 ]
 
 MIDDLEWARE = [
@@ -159,3 +161,14 @@ AWS_S3_CUSTOM_DOMAIN = f"{AWS_STORAGE_BUCKET_NAME}.s3.amazonaws.com"
 AWS_S3_OBJECT_PARAMETERS = {"CacheControl": "max-age=86400", "ACL": "public-read"}
 MEDIAFILES_LOCATION = "media"
 DEFAULT_FILE_STORAGE = "project.storage_backends.MediaStorage"
+
+# Channels
+ASGI_APPLICATION = "project.asgi.application"
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels_redis.core.RedisChannelLayer",
+        "CONFIG": {
+            "hosts": [os.environ.get("REDIS_URL", ("127.0.0.1", 6379))],
+        },
+    },
+}

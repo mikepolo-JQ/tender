@@ -20,6 +20,9 @@ redis = "*"
 boto3 = "*"
 django-storages = "*"
 pytest = "*"
+channels = "*"
+channels-redis = "*"
+pytest-asyncio = "*"
 
 [dev-packages]
 
