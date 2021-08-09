@@ -18,6 +18,8 @@ def access_for_chat(user, chat_pk):
     """
     permissions AccessForChat for WebSocket
     """
+    if user.is_anonymous:
+        return False
     try:
         chat = Chat.objects.get(pk=chat_pk)
     except Chat.DoesNotExist:

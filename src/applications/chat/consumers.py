@@ -8,6 +8,7 @@ from channels.generic.websocket import WebsocketConsumer
 from applications.chat.models import Chat, Message
 from applications.chat.serializers import MessageSerializer
 from applications.chat.services import access_for_chat
+from applications.notification.models import Notification
 
 from applications.user_profile.serializers import UserListSerializer
 
@@ -38,6 +39,28 @@ def create_message(s, data):
         return
 
     msg = Message.objects.create(content=msg_content, author=s.user, chat_id=s.chat_pk)
+
+    # Create notification
+    chat = Chat.objects.get(pk=s.chat_pk)
+    talkers = chat.users.exclude(pk=s.user.pk)
+    for talker in talkers:
+        if talker.status_chat != "Offline":
+            continue
+
+        notification_content = f"{s.user.username} wrote to you."
+
+        if Notification.objects.filter(
+                user=talker,
+                content=notification_content
+        ):
+            continue
+
+        Notification.objects.create(
+            name="You have a new message.",
+            user=talker,
+            content=notification_content,
+        )
+        print("CREATE NOTIFICATION!!!")
 
     # Send message to room group
     async_to_sync(s.channel_layer.group_send)(
@@ -118,6 +141,11 @@ command_handlers = {
 
 
 class ChatConsumer(WebsocketConsumer):
+
+    def update_user_status(self, user, status):
+        user.status_chat = status
+        user.save()
+
     def connect(self):
         self.chat_pk = self.scope["url_route"]["kwargs"]["chat_pk"]
         self.room_group_name = f"room_{self.chat_pk}"
@@ -149,6 +177,8 @@ class ChatConsumer(WebsocketConsumer):
                     "disconnect": True,
                 },
             )
+        else:
+            self.update_user_status(self.user, "ON")
 
     def disconnect(self, close_code):
         # Leave room group
@@ -158,6 +188,9 @@ class ChatConsumer(WebsocketConsumer):
         async_to_sync(self.channel_layer.group_discard)(
             self.user_room_name, self.channel_name
         )
+
+        if self.permissions:
+            self.update_user_status(self.user, "OFF")
 
     # Receive message from WebSocket
     def receive(self, text_data):
