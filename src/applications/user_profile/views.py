@@ -12,7 +12,8 @@ from rest_framework import generics, permissions
 from applications.user_profile import serializers
 from applications.user_profile.services import (
     IsYouOrIsAdminOrReadOnly,
-    delete_file_from_s3, user_contacts_add_delete,
+    delete_file_from_s3,
+    user_contacts_add_delete,
 )
 
 
@@ -36,7 +37,9 @@ class UserProfileView(generics.RetrieveUpdateAPIView):
 
 
 class UserAddDeleteToContact(APIView):
-    permission_classes = [permissions.IsAuthenticated, ]
+    permission_classes = [
+        permissions.IsAuthenticated,
+    ]
 
     def patch(self, request, *args, **kwargs):
         return user_contacts_add_delete(self, request, command="add")

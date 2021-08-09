@@ -16,9 +16,11 @@ urlpatterns = [
         views.OwnerReviewsListView.as_view(),
         name="offer_reviews",
     ),
-
-    path("offer/<int:pk>/add-delete/", views.UserAddDeleteOffer.as_view(), name="offer_add_delete"),
-
+    path(
+        "offer/<int:pk>/add-delete/",
+        views.UserAddDeleteOffer.as_view(),
+        name="offer_add_delete",
+    ),
     path("store/", views.StoreListView.as_view(), name="stores"),
     path("store/<int:pk>/", views.StoreDetailView.as_view(), name="store"),
     path(

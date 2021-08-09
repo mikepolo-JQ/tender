@@ -5,7 +5,11 @@ from rest_framework.views import APIView
 
 from applications.offer.models import Offer, Store, Review
 from applications.offer import serializers, tasks
-from applications.offer.services import OfferFilter, IsOwnerOrReadOnly, user_offers_add_delete
+from applications.offer.services import (
+    OfferFilter,
+    IsOwnerOrReadOnly,
+    user_offers_add_delete,
+)
 
 
 class OfferListView(generics.ListAPIView):
@@ -139,7 +143,9 @@ class UploadToTheDBView(generics.views.APIView):
 
 
 class UserAddDeleteOffer(APIView):
-    permission_classes = [permissions.IsAuthenticated, ]
+    permission_classes = [
+        permissions.IsAuthenticated,
+    ]
 
     def patch(self, request, *args, **kwargs):
         return user_offers_add_delete(self, request, command="add", **kwargs)

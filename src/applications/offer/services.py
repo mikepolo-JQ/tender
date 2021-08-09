@@ -42,10 +42,9 @@ class IsOwnerOrReadOnly(permissions.BasePermission):
 def user_offers_add_delete(self, request, **kwargs):
     user = self.request.user
 
-    add_or_delete = {
-        "add": user.offers.add,
-        "delete": user.offers.remove
-    }.get(kwargs.get("command"))
+    add_or_delete = {"add": user.offers.add, "delete": user.offers.remove}.get(
+        kwargs.get("command")
+    )
 
     try:
         offer = Offer.objects.get(pk=kwargs.get("pk"))
@@ -54,6 +53,3 @@ def user_offers_add_delete(self, request, **kwargs):
         return Response(status.HTTP_200_OK)
     except Offer.DoesNotExist:
         return Response(status.HTTP_404_NOT_FOUND)
-
-
-

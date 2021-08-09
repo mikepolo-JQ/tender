@@ -15,7 +15,8 @@ file_name = "data.json"
 @app.task
 def check_the_end_of_my_offer():
     offers = Offer.objects.all()
-    count = 0
+    notification_sent_count = 0
+    offer_ending_count = 0
 
     for offer in offers:
         if not offer.end_date - date.today() < timedelta(1):
@@ -26,11 +27,17 @@ def check_the_end_of_my_offer():
                 name="The offer is about to expire.",
                 user=user,
                 json_data=OfferListSerializer(offer).data,
-                content=f"Offer \"{offer.title}\" is about to expire."
+                content=f'Offer "{offer.title}" is about to expire.',
             )
-        count += 1
+            notification_sent_count += 1
 
-    return json.dumps({"ok": True, "notification_sent_count": count})
+        offer_ending_count += 1
+
+    return json.dumps({
+        "ok": True,
+        "notification_sent_count": notification_sent_count,
+        "offer_ending_count": offer_ending_count
+    })
 
 
 @app.task

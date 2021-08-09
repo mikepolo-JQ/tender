@@ -131,7 +131,7 @@ class NotificationConsumer(WebsocketConsumer):
                     "count": event["data"]["count"],
                     "content": event["data"]["content"],
                     "data": event["data"]["data"],
-                    "name": event["data"]["name"]
+                    "name": event["data"]["name"],
                 }
             )
         )

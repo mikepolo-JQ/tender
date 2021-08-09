@@ -33,7 +33,7 @@ class Notification(models.Model):
                 "count": notifications_count,
                 "content": self.content,
                 "data": self.json_data,
-                "name": self.name
+                "name": self.name,
             }
 
             async_to_sync(channel_layer.group_send)(
