@@ -1,15 +1,11 @@
 import json
 
-from asgiref.sync import async_to_sync, sync_to_async
-from channels.exceptions import StopConsumer
+from asgiref.sync import async_to_sync
 from channels.generic.websocket import WebsocketConsumer
 
-
-from applications.chat.models import Chat, Message
-from applications.chat.serializers import MessageSerializer
-from applications.chat.service import access_for_chat
 from applications.notification.models import Notification
 from applications.notification import serializers
+from applications.notification.serializers import NotificationSerializer
 
 from applications.user_profile.serializers import UserListSerializer
 
@@ -134,6 +130,8 @@ class NotificationConsumer(WebsocketConsumer):
                     "command": "notification",
                     "count": event["data"]["count"],
                     "content": event["data"]["content"],
+                    "data": event["data"]["data"],
+                    "name": event["data"]["name"]
                 }
             )
         )

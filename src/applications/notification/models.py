@@ -28,10 +28,14 @@ class Notification(models.Model):
             notifications_count = Notification.objects.filter(
                 viewed=False, user=self.user
             ).count()
+
             data = {
                 "count": notifications_count,
                 "content": self.content,
+                "data": self.json_data,
+                "name": self.name
             }
+
             async_to_sync(channel_layer.group_send)(
                 self.user.get_group_name(),
                 {

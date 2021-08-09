@@ -10,5 +10,6 @@ app_name = UserProfileConfig.label
 
 urlpatterns = [
     path("<int:pk>/", views.UserProfileView.as_view(), name="profile"),
+    path("contacts/add/", views.UserAddDeleteToContact.as_view(), name="add_contact"),
 ]
 # csrf_exempt(
