@@ -54,12 +54,12 @@ def user_contacts_add_delete(self, request, **kwargs):
         "delete": user.contacts.remove
     }.get(kwargs.get("command"))
 
-    contacts_to_add_list = request.data["contacts"]
+    contacts_list = request.data["contacts"]
 
     added_list = list()
     failed_list = list()
 
-    for contact_pk in contacts_to_add_list:
+    for contact_pk in contacts_list:
         try:
             contact = User.objects.get(pk=contact_pk)
             add_or_delete(contact)
