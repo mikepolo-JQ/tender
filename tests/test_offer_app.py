@@ -69,18 +69,18 @@ class OfferAppTests(APITestCase):
             raise User.DoesNotExist("Unable to log in with provided credentials")
         return token
 
-    def test_data_update_from_API(self):
-        response = tasks.update_data_file()
-        response_dict = json.loads(response)
-
-        self.assertTrue(response_dict["uploaded_count"])
-
-        # global offers_count
-        update_offer_count(response_dict["uploaded_count"])
-
-        self.assertJSONEqual(
-            response, {"ok": True, "uploaded_count": get_offer_count()}
-        )
+    # def test_data_update_from_API(self):
+    #     response = tasks.update_data_file()
+    #     response_dict = json.loads(response)
+    #
+    #     self.assertTrue(response_dict["uploaded_count"])
+    #
+    #     # global offers_count
+    #     update_offer_count(response_dict["uploaded_count"])
+    #
+    #     self.assertJSONEqual(
+    #         response, {"ok": True, "uploaded_count": get_offer_count()}
+    #     )
 
     def test_data_upload(self):
         response = tasks.upload_data_from_file_to_the_db()
