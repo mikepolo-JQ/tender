@@ -123,25 +123,6 @@ class ReviewLikeView(generics.views.APIView):
         return Response({"ok": True})
 
 
-# //////////////////////// ADMIN ///////////////////////////////
-class DataUpdateView(generics.views.APIView):
-
-    permission_classes = [permissions.IsAdminUser]
-
-    def get(self, request, *args, **kwargs):
-        tasks.update_data_file.delay()
-        return Response({"update": True})
-
-
-class UploadToTheDBView(generics.views.APIView):
-
-    permission_classes = [permissions.IsAdminUser]
-
-    def get(self, request, *args, **kwargs):
-        tasks.upload_data_from_file_to_the_db.delay()
-        return Response({"upload": True})
-
-
 class UserAddDeleteOffer(APIView):
     permission_classes = [
         permissions.IsAuthenticated,
@@ -152,3 +133,31 @@ class UserAddDeleteOffer(APIView):
 
     def delete(self, request, *args, **kwargs):
         return user_offers_add_delete(self, request, command="delete", **kwargs)
+
+
+# //////////////////////// ADMIN ///////////////////////////////
+class DataUpdateView(generics.views.APIView):
+
+    permission_classes = [permissions.IsAdminUser]
+
+    def post(self, request, *args, **kwargs):
+        tasks.update_data_file.delay()
+        return Response({"update": True})
+
+
+class UploadToTheDBView(generics.views.APIView):
+
+    permission_classes = [permissions.IsAdminUser]
+
+    def post(self, request, *args, **kwargs):
+        tasks.upload_data_from_file_to_the_db.delay()
+        return Response({"upload": True})
+
+
+class ClearingDBData(generics.views.APIView):
+
+    permission_classes = [permissions.IsAdminUser]
+
+    def post(self, request, *args, **kwargs):
+        tasks.clearing_data_from_the_db.delay()
+        return Response({"Clearing": True})

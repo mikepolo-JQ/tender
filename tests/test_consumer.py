@@ -8,7 +8,6 @@ from applications.chat.consumers import ChatConsumer
 from channels.testing import WebsocketCommunicator
 
 
-
 # @pytest.mark.asyncio
 # async def test_consumer():
 #     communicator = WebsocketCommunicator(ChatConsumer.as_asgi(), "/testws/")

@@ -1,24 +1,34 @@
 import django
+import pytest
 
 django.setup()
 
 import os
 import random
+import json
 
 from django.conf import settings
 from rest_framework.test import APITestCase
 from rest_framework.test import APIClient
+from applications.offer import tasks
 
 from applications.offer.models import Offer, Review, Store
 from applications.user_profile.models import User
-from applications.offer import tasks
-
-
-offers_count = 438
 
 
 def get_test_content():
     return f"test_content_{os.urandom(16).hex()}"
+
+
+def update_offer_count(count):
+    with open("offer_count.txt", "w") as f:
+        f.write(str(count))
+
+
+def get_offer_count():
+    with open("offer_count.txt", "r") as f:
+        count = f.readline()
+        return int(count)
 
 
 class OfferAppTests(APITestCase):
@@ -32,20 +42,20 @@ class OfferAppTests(APITestCase):
         super().setUp()
         self.client = APIClient()
 
-    def admin_login(self):
-
-        User.objects.create_superuser(
-            username=self.admin_username, password=self.password
-        )
-
-        response = self.client.post(
-            "/auth/token/login/",
-            {"username": self.admin_username, "password": self.password},
-            format="json",
-        )
-        token = response.data.get("auth_token")
-        self.client.credentials(HTTP_AUTHORIZATION=f"Token {token}")
-        return response
+    # def admin_login(self):
+    #
+    #     User.objects.create_superuser(
+    #         username=self.admin_username, password=self.password
+    #     )
+    #
+    #     response = self.client.post(
+    #         "/auth/token/login/",
+    #         {"username": self.admin_username, "password": self.password},
+    #         format="json",
+    #     )
+    #     token = response.data.get("auth_token")
+    #     self.client.credentials(HTTP_AUTHORIZATION=f"Token {token}")
+    #     return response
 
     def _login(self, user: User):
 
@@ -59,23 +69,94 @@ class OfferAppTests(APITestCase):
             raise User.DoesNotExist("Unable to log in with provided credentials")
         return token
 
-    # def test_data_update_from_API(self):
-    #     response = tasks.update_data_file()
-    #     response_dict = json.loads(response)
-    #
-    #     self.assertTrue(response_dict["uploaded_count"])
-    #
-    #     global offers_count
-    #     offers_count = response_dict["uploaded_count"]
-    #
-    #     self.assertJSONEqual(response, {"ok": True, "uploaded_count": offers_count})
+    def test_data_update_from_API(self):
+        response = tasks.update_data_file()
+        response_dict = json.loads(response)
 
-    def _data_upload(self):
-        response = tasks.upload_data_from_file_to_the_db()
+        self.assertTrue(response_dict["uploaded_count"])
+
+        # global offers_count
+        update_offer_count(response_dict["uploaded_count"])
+
         self.assertJSONEqual(
-            response,
-            {"ok": True, "count": offers_count, "added": offers_count},
-            "Try change data_update_test to True",
+            response, {"ok": True, "uploaded_count": get_offer_count()}
+        )
+
+    def test_data_upload(self):
+        response = tasks.upload_data_from_file_to_the_db()
+        response_dict = json.loads(response)
+
+        self.assertEqual(response_dict["ok"], True)
+        self.assertEqual(response_dict["count"], get_offer_count())
+        self.assertEqual(type(response_dict["added"]), int)
+
+    # OFFER TEST
+    def test_offer_detail_and_list(self):
+
+        # Offers list test
+        response = self.client.get("/api/offer/")
+
+        # self.assertEqual(get_offer_count(), len(response.data))
+        # pytest.set_trace()
+        for offer_data in response.data:
+            self.offer_list_format_tst(offer_data)
+
+        # Single offer test
+        random_offer_id = random.randint(
+            response.data[0]["id"], response.data[-1]["id"]
+        )
+        response = self.client.get(f"/api/offer/{random_offer_id}/")
+
+        offer = response.data
+
+        self.assertEqual(offer["id"], random_offer_id)
+        self.offer_detail_format_tst(offer)
+
+    # STORE TEST
+    def test_store_detail_and_list(self):
+
+        # Store list test
+        response = self.client.get("/api/store/")
+
+        for store in response.data:
+            self.store_list_format_tst(store)
+
+        # Store detail test (all fields except offers have already been checked)
+        random_store_id = random.randint(
+            response.data[0]["id"], response.data[-1]["id"]
+        )
+        response = self.client.get(f"/api/store/{random_store_id}/")
+
+        for offer in response.data["offers"]:
+            self.offer_detail_format_tst(offer)
+
+    # REVIEW TEST
+    def review_test_owner_and_detail(self):
+        author = User.objects.create_user(username="test", password=self.password)
+
+        response = self.client.get("/api/offer/")  # get offer list
+
+        random_offer_id = random.randint(
+            response.data[0]["id"], response.data[-1]["id"]
+        )
+
+        # Offer list Review test
+        self.owner_list_review_tst(
+            owner_type="offer", owner_id=random_offer_id, author=author
+        )
+
+        # Review detail test
+        self.review_detail_format_tst(like_author=author)
+
+        response = self.client.get("/api/store/")  # get store list
+
+        random_store_id = random.randint(
+            response.data[0]["id"], response.data[-1]["id"]
+        )
+
+        # Store list Review test
+        self.owner_list_review_tst(
+            owner_type="store", owner_id=random_store_id, author=author
         )
 
     # Testing offer data in format OfferListSerializer
@@ -241,55 +322,3 @@ class OfferAppTests(APITestCase):
         # check owner rating after update
         owner_resp = self.client.get(f"/api/{owner_type.lower()}/{owner_id}/")
         self.assertTrue(owner_resp.data["rating"])
-
-    # TEST OFFER STORE ana their reviews
-    def test_offerStore(self):
-        self._data_upload()
-        author = User.objects.create_user(username="test", password=self.password)
-
-        # Offers list test
-        response = self.client.get("/api/offer/")
-
-        self.assertEqual(offers_count, len(response.data))
-
-        for offer_data in response.data:
-            self.offer_list_format_tst(offer_data)
-
-        # Single offer test
-        random_offer_id = random.randint(
-            response.data[0]["id"], response.data[-1]["id"]
-        )
-        response = self.client.get(f"/api/offer/{random_offer_id}/")
-
-        offer = response.data
-
-        self.assertEqual(offer["id"], random_offer_id)
-        self.offer_detail_format_tst(offer)
-
-        # Offer list Review test
-        self.owner_list_review_tst(
-            owner_type="offer", owner_id=random_offer_id, author=author
-        )
-
-        # Review detail test
-        self.review_detail_format_tst(like_author=author)
-
-        # Store list test
-        response = self.client.get("/api/store/")
-
-        for store in response.data:
-            self.store_list_format_tst(store)
-
-        # Store detail test (all fields except offers have already been checked)
-        random_store_id = random.randint(
-            response.data[0]["id"], response.data[-1]["id"]
-        )
-        response = self.client.get(f"/api/store/{random_store_id}/")
-
-        for offer in response.data["offers"]:
-            self.offer_detail_format_tst(offer)
-
-        # Store list Review test
-        self.owner_list_review_tst(
-            owner_type="store", owner_id=random_store_id, author=author
-        )

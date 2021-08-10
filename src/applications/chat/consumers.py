@@ -49,10 +49,7 @@ def create_message(s, data):
 
         notification_content = f"{s.user.username} wrote to you."
 
-        if Notification.objects.filter(
-                user=talker,
-                content=notification_content
-        ):
+        if Notification.objects.filter(user=talker, content=notification_content):
             continue
 
         Notification.objects.create(
@@ -141,7 +138,6 @@ command_handlers = {
 
 
 class ChatConsumer(WebsocketConsumer):
-
     def update_user_status(self, user, status):
         user.status_chat = status
         user.save()
