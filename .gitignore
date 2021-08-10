@@ -13,3 +13,4 @@ config/.secrets.yml
 *.json
 *.rdb
 *.db
+*.txt
