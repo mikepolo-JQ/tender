@@ -1,7 +1,4 @@
-import asyncio
-
 import django
-from django.conf import settings
 
 django.setup()
 
@@ -9,31 +6,31 @@ import os
 from asgiref.sync import sync_to_async
 
 from applications.chat.models import Chat, Message
-from applications.user_profile.models import User
-from rest_framework.test import APITestCase, APIClient
+from rest_framework.test import APIClient
 
 import pytest
 
 from applications.chat.consumers import ChatConsumer
 from channels.testing import WebsocketCommunicator
-from tests.utils_chat_app_tst import password, get_token, author_data_in_format_list_tst
+from tests.utils_chat_app_tst import (
+    get_token,
+    author_data_in_format_list_tst,
+    user_format_list_tst,
+    get_user,
+    get_chat_for_users,
+    delete_test_objects_from_list,
+)
 
 
 @pytest.mark.django_db(transaction=True)
 @pytest.mark.asyncio
 async def test_consumer():
 
-    user = await sync_to_async(User.objects.create_user)(
-        username=f"test_username_{os.urandom(8).hex()}", password=password
-    )
+    user = await sync_to_async(get_user)()
     token = await sync_to_async(get_token)(user)
-    talker = await sync_to_async(User.objects.create_user)(
-        username=f"test_username_{os.urandom(8).hex()}", password=password
-    )
+    talker = await sync_to_async(get_user)()
 
-    chat = await sync_to_async(Chat.objects.create)()
-    await sync_to_async(chat.users.add)(user, talker)
-    await sync_to_async(chat.save)()
+    chat = await sync_to_async(get_chat_for_users)(user.pk, talker.pk)
 
     headers = {
         "Authorization": f"Token {token}",
@@ -105,28 +102,15 @@ async def test_consumer():
     await communicator.disconnect()
 
 
-def user_format_list_tst(data: dict, user: User):
-    assert data["id"] == user.id
-    assert data["username"] == user.username
-    assert (
-        data["avatar"] == f"https://{settings.AWS_S3_CUSTOM_DOMAIN}/media/{user.avatar}"
-    )
-
-
 def test_my_chats_url():
     client = APIClient()
-    user = User.objects.create_user(
-        username=f"test_username_{os.urandom(8).hex()}", password=password
-    )
+
+    user = get_user()
     token = get_token(user)
 
-    talker = User.objects.create_user(
-        username=f"test_username_{os.urandom(8).hex()}", password=password
-    )
+    talker = get_user()
 
-    chat = Chat.objects.create()
-    chat.users.add(user, talker)
-    chat.save()
+    chat = get_chat_for_users(user, talker)
 
     message = Message.objects.create(
         content=f"content_{os.urandom(8).hex()}", author=user, chat=chat
@@ -155,7 +139,33 @@ def test_my_chats_url():
 
         author_data_in_format_list_tst(data=last_message, user=user)
 
+    chat = Chat.objects.get(pk=chat["id"])
+    delete_test_objects_from_list([user, talker, chat])
 
-if __name__ == "__main__":
-    # asyncio.run(test_consumer())
-    test_my_chats_url()
+
+def test_chat_create_url():
+    client = APIClient()
+    user = get_user()
+    token = get_token(user)
+
+    talker = get_user()
+
+    client.credentials(HTTP_AUTHORIZATION=f"Token {token}")
+    data = {"users": [user.pk, talker.pk]}
+    response = client.post("/api/chat/create/", data=data, format="json")
+
+    chat_response = response.data
+
+    assert type(chat_response["id"]) is int
+    assert not chat_response["name"]
+    assert type(chat_response["updated_at"]) is str
+    assert chat_response["users"] == [user.pk, talker.pk]
+
+    chat = Chat.objects.get(pk=chat_response["id"])
+    delete_test_objects_from_list([user, talker, chat])
+
+
+# if __name__ == "__main__":
+#     # asyncio.run(test_consumer())
+#     # test_my_chats_url()
+#     test_chat_create_url()

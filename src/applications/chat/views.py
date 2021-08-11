@@ -1,6 +1,7 @@
 from django.views.generic import TemplateView
 from rest_framework import generics, permissions, mixins, status
 from rest_framework.response import Response
+from rest_framework.exceptions import AuthenticationFailed
 
 from applications.chat import serializers
 from applications.chat.models import Message, Chat
@@ -45,7 +46,17 @@ class ChatListView(generics.ListAPIView):
 
 
 class CreateChatView(generics.CreateAPIView):
-    permission_classes = [permissions.AllowAny]
+    permission_classes = [permissions.IsAuthenticated]
 
     model = Chat
     serializer_class = serializers.ChatCreateSerializer
+
+    def perform_create(self, serializer):
+        users = serializer.validated_data["users"]
+        if self.request.user not in users:
+            raise AuthenticationFailed(
+                "You don't have permission to perform this action. "
+                "Please change list of users..."
+            )
+
+        super().perform_create(serializer)
