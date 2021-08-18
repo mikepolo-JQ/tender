@@ -9,6 +9,7 @@ from applications.chat.models import Chat, Message
 from applications.chat.serializers import MessageSerializer
 from applications.chat.services import access_for_chat
 from applications.notification.models import Notification
+from applications.user_profile.models import User
 
 from applications.user_profile.serializers import UserListSerializer
 
@@ -49,10 +50,7 @@ def create_message(s, data):
 
         notification_content = f"{s.user.username} wrote to you."
 
-        if Notification.objects.filter(
-                user=talker,
-                content=notification_content
-        ):
+        if Notification.objects.filter(user=talker, content=notification_content):
             continue
 
         Notification.objects.create(
@@ -60,7 +58,6 @@ def create_message(s, data):
             user=talker,
             content=notification_content,
         )
-        print("CREATE NOTIFICATION!!!")
 
     # Send message to room group
     async_to_sync(s.channel_layer.group_send)(
@@ -141,16 +138,20 @@ command_handlers = {
 
 
 class ChatConsumer(WebsocketConsumer):
-
     def update_user_status(self, user, status):
         user.status_chat = status
         user.save()
 
     def connect(self):
-        self.chat_pk = self.scope["url_route"]["kwargs"]["chat_pk"]
+        try:
+            self.chat_pk = self.scope["url_route"]["kwargs"]["chat_pk"]
+            self.user = self.scope["user"]
+        except KeyError:
+            self.chat_pk = self.scope["headers"]["chat_pk"]
+            self.user = User.objects.get(pk=self.scope["headers"]["user_pk"])
+
         self.room_group_name = f"room_{self.chat_pk}"
         self.permissions = False
-        self.user = self.scope["user"]
         self.user_room_name = f"user_{self.user.pk}"
 
         if access_for_chat(user=self.user, chat_pk=self.chat_pk):
@@ -217,9 +218,7 @@ class ChatConsumer(WebsocketConsumer):
 
     def message_update(self, event):
         self.send(
-            text_data=json.dumps(
-                {"command": "update_message", "message": event["message"]}
-            )
+            text_data=json.dumps({"command": "update", "message": event["message"]})
         )
 
     def error_response(self, event):

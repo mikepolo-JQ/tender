@@ -9,7 +9,7 @@ urlpatterns = [
     path("api/profile/", include("applications.user_profile.urls"), name="profile"),
     path("auth/", include("djoser.urls")),
     path("auth/", include("djoser.urls.authtoken")),
-    path("chat/", include("applications.chat.urls"), name="chat"),
+    path("api/chat/", include("applications.chat.urls"), name="chat"),
     path(
         "api/notifs/", include("applications.notification.urls"), name="notifications"
     ),

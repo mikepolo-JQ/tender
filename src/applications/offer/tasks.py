@@ -13,6 +13,29 @@ file_name = "data.json"
 
 
 @app.task
+def clearing_data_from_the_db():
+    offers = Offer.objects.all().only("end_date")
+    count = 0
+    deleted = 0
+
+    for offer in offers:
+        if offer.end_date - date.today() >= timedelta(0):
+            count += 1
+            continue
+
+        offer.delete()
+        deleted += 1
+
+    return json.dumps(
+        {
+            "ok": True,
+            "viewed_count": count,
+            "delete_count": deleted,
+        }
+    )
+
+
+@app.task
 def check_the_end_of_my_offer():
     offers = Offer.objects.all()
     notification_sent_count = 0
@@ -47,8 +70,13 @@ def upload_data_from_file_to_the_db():
     count = 0
     added = 0
 
-    with open(file_name) as data_file:
-        data = json.load(data_file)
+    try:
+        with open(file_name) as data_file:
+            data = json.load(data_file)
+    except FileNotFoundError:
+        update_data_file()
+        with open(file_name) as data_file:
+            data = json.load(data_file)
 
     offers_data = data.get("offers")
 

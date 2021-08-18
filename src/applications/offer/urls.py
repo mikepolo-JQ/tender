@@ -32,5 +32,6 @@ urlpatterns = [
     path("review/<int:pk>/like/", views.ReviewLikeView.as_view(), name="review_like"),
     path("data-update/", views.DataUpdateView.as_view(), name="update"),
     path("data-upload/", views.UploadToTheDBView.as_view(), name="upload"),
+    path("data-clear/", views.ClearingDBData.as_view(), name="clear"),
 ]
 # csrf_exempt(
